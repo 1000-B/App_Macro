@@ -42,34 +42,13 @@ food_data = load_food_data()
 st.title("Macro Tracker")
 st.subheader("Log Your Food")
 
-# def save_food_data():
-#     df = pd.DataFrame.from_dict(food_data, orient="index").reset_index()
-#     df.rename(columns={"index": "Food"}, inplace=True)  
-
-#     # Get existing foods from Google Sheets
-#     existing_foods = {row["Food"] for row in food_sheet.get_all_records()}
-
-#     # Filter only new foods
-#     new_rows = df[~df["Food"].isin(existing_foods)].values.tolist()
-
-#     if new_rows:
-#         food_sheet.append_rows(new_rows)  # Append new foods only
-
 def save_food_data():
-    # Convert food data to DataFrame
     df = pd.DataFrame.from_dict(food_data, orient="index").reset_index()
-    df.rename(columns={"index": "Food"}, inplace=True)
-
-    # Get the first row to find the actual header name (even if it's blank)
-    first_row = food_sheet.row_values(1)
-    key_column = first_row[0] if first_row[0] != '' else 'Food'  # Fallback to 'Food' if blank
-
+    df.rename(columns={"index": "Food"}, inplace=True)  
     # Get existing foods from Google Sheets
-    existing_foods = {row[key_column] for row in food_sheet.get_all_records()}
-
+    existing_foods = {row["Food"] for row in food_sheet.get_all_records()}
     # Filter only new foods
     new_rows = df[~df["Food"].isin(existing_foods)].values.tolist()
-
     if new_rows:
         food_sheet.append_rows(new_rows)  # Append new foods only
 

@@ -29,9 +29,12 @@ log_sheet = spreadsheet.worksheet("FoodLog")
 # Load existing food data from Google Sheets
 def load_food_data():
     data = food_sheet.get_all_records()
-    return {row["Food"]: row for row in data} if data else {}
+    first_row = food_sheet.row_values(1)
+    key_column = first_row[0] if first_row[0] != '' else 'Food'  # Use 'Food' if header is blank
+    return {row[key_column]: row for row in data} if data else {}
 
 food_data = load_food_data()
+
 
 # # Save function to update CSV
 # def save_food_data():

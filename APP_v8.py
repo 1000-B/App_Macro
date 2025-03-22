@@ -215,4 +215,5 @@ if not log_data.empty:
         plot_macros(log_data.groupby("Month", as_index=False).sum())
 
 
+
         

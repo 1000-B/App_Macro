@@ -29,7 +29,8 @@ log_sheet = spreadsheet.worksheet("FoodLog")
 # Load existing food data from Google Sheets
 def load_food_data():
     data = food_sheet.get_all_records()
-    return {row["Food"]: row for row in data} if data else {}
+    return {row[list(row.keys())[0]]: row for row in data} if data else {}
+    #return {row["Food"]: row for row in data} if data else {}
 
 food_data = load_food_data()
 

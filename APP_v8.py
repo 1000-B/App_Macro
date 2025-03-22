@@ -6,6 +6,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 
+
+
 # Load existing food data or use default
 # def load_food_data():
 #     if os.path.exists("food_database.csv"):
@@ -45,16 +47,24 @@ st.subheader("Log Your Food")
 def save_food_data():
     df = pd.DataFrame.from_dict(food_data, orient="index").reset_index()
     df.rename(columns={"index": "Food"}, inplace=True)  
-    
+
+    # Ensure no duplicate "Food" entries in df
+    if df["Food"].duplicated().any():
+        st.error("Duplicate food entries found in the database. Please resolve duplicates before saving.")
+        return  # Stop execution if duplicates are found
+
     existing_foods = {row["Food"] for row in food_sheet.get_all_records()}
-    
+
     new_rows = df[~df["Food"].isin(existing_foods)].values.tolist()
+    
     if new_rows:
         food_sheet.append_rows(new_rows)  # Append only new foods
 
+existing_foods = [row["Food"] for row in food_sheet.get_all_records()]
+duplicates = set([food for food in existing_foods if existing_foods.count(food) > 1])
 
-
-
+if duplicates:
+    st.error(f"Duplicate foods in Google Sheets: {duplicates}. Please remove them.")
 
 # Step 1: Create list of existing foods + "Add New Food..."
 food_options = ["Add New Food..."] + list(food_data.keys())
@@ -110,9 +120,32 @@ else:
 
     # Step 5: Save new food
     if st.button("Save New Food"):
-        food_data[food] = {"Unit": unit, "Protein": protein, "Carbs": carbs, "Fats": fats}
-        save_food_data()
-        st.success(f"{food} has been added to the database!")
+        # Ensure the food name is not empty
+        if not food:
+            st.error("Food name cannot be empty!")
+        elif food in food_data:
+            st.warning(f"{food} already exists in the database.")
+        else:
+            # Append new food entry
+            new_entry = {
+                "Food": food,
+                "Unit": unit,
+                "Protein": protein,
+                "Carbs": carbs,
+                "Fats": fats
+            }
+            
+            # Convert food_data to DataFrame before saving
+            df_new_food = pd.DataFrame([new_entry])  # Convert single entry to DataFrame
+            
+            # Save new food to Google Sheets
+            food_sheet.append_rows(df_new_food.values.tolist())
+            
+            # Update local food_data dictionary
+            food_data[food] = {"Unit": unit, "Protein": protein, "Carbs": carbs, "Fats": fats}
+            
+            st.success(f"{food} has been added to the database!")
+
 
 
 #quantity = st.number_input("Quantity", min_value=0.1, step=0.1)

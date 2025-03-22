@@ -195,8 +195,8 @@ def plot_macros(filtered_data):
 
 log_data = pd.DataFrame(log_sheet.get_all_records())
 if not log_data.empty:
-    # Attempt to convert 'Date' column to datetime format without specifying a format
-    log_data["Date"] = pd.to_datetime(log_data["Date"], errors='coerce')
+    # Attempt to convert 'Date' column to datetime format with the correct format
+    log_data["Date"] = pd.to_datetime(log_data["Date"], format="%Y-%m-%d", errors='coerce')
     
     # Check for any invalid dates that were converted to NaT (optional)
     if log_data["Date"].isna().any():
@@ -213,5 +213,6 @@ if not log_data.empty:
     elif time_filter == "Monthly":
         log_data["Month"] = log_data["Date"].dt.to_period("M")
         plot_macros(log_data.groupby("Month", as_index=False).sum())
+
 
         

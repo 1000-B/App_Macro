@@ -16,6 +16,8 @@ from google.oauth2.service_account import Credentials
 # Google Sheets authentication
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = Credentials.from_service_account_file("service_account.json", scopes=scope)
+#import json
+#creds = Credentials.from_service_account_info(json.loads(st.secrets["service_account"]), scopes=scope)
 client = gspread.authorize(creds)
 
 # Open the Google Sheet
@@ -40,9 +42,18 @@ st.title("Macro Tracker")
 st.subheader("Log Your Food")
 
 def save_food_data():
-    df = pd.DataFrame.from_dict(food_data, orient="index")
-    food_sheet.clear()
-    food_sheet.update([df.columns.values.tolist()] + df.values.tolist())
+    df = pd.DataFrame.from_dict(food_data, orient="index").reset_index()
+    df.rename(columns={"index": "Food"}, inplace=True)  
+
+    # Get existing foods from Google Sheets
+    existing_foods = {row["Food"] for row in food_sheet.get_all_records()}
+
+    # Filter only new foods
+    new_rows = df[~df["Food"].isin(existing_foods)].values.tolist()
+
+    if new_rows:
+        food_sheet.append_rows(new_rows)  # Append new foods only
+
 
 
 # Step 1: Create list of existing foods + "Add New Food..."

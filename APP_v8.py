@@ -159,7 +159,7 @@ if food in food_data:
 
     if st.button("Add to Log"):
         new_entry = {
-            "Date": pd.Timestamp.today().strftime('%d/%m/%Y'),
+            "Date": pd.Timestamp.today(),#.strftime('%d/%m/%Y'),
             "Food": food,
             "Quantity": quantity,
             "Unit": food_data[food]["Unit"],

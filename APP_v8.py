@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import gspread
 from google.oauth2.service_account import Credentials
-import json
+
 
 # Load existing food data or use default
 # def load_food_data():
@@ -29,8 +29,8 @@ log_sheet = spreadsheet.worksheet("FoodLog")
 # Load existing food data from Google Sheets
 def load_food_data():
     data = food_sheet.get_all_records()
-    return {row[list(row.keys())[0]]: row for row in data} if data else {}
-    #return {row["Food"]: row for row in data} if data else {}
+    return {row["Food"]: row for row in data} if data else {}
+
 
 food_data = load_food_data()
 
@@ -45,12 +45,13 @@ st.subheader("Log Your Food")
 def save_food_data():
     df = pd.DataFrame.from_dict(food_data, orient="index").reset_index()
     df.rename(columns={"index": "Food"}, inplace=True)  
-    # Get existing foods from Google Sheets
+    
     existing_foods = {row["Food"] for row in food_sheet.get_all_records()}
-    # Filter only new foods
+    
     new_rows = df[~df["Food"].isin(existing_foods)].values.tolist()
     if new_rows:
-        food_sheet.append_rows(new_rows)  # Append new foods only
+        food_sheet.append_rows(new_rows)  # Append only new foods
+
 
 
 

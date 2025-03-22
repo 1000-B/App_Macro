@@ -159,7 +159,7 @@ if food in food_data:
 
     if st.button("Add to Log"):
         new_entry = {
-            "Date": pd.Timestamp.today().strftime('%Y-%m-%d'),
+            "Date": pd.Timestamp.today().strftime('%d/%m/%Y'),
             "Food": food,
             "Quantity": quantity,
             "Unit": food_data[food]["Unit"],
@@ -195,12 +195,8 @@ def plot_macros(filtered_data):
 
 log_data = pd.DataFrame(log_sheet.get_all_records())
 if not log_data.empty:
-    # Attempt to convert 'Date' column to datetime format with the correct format
-    log_data["Date"] = pd.to_datetime(log_data["Date"], format="%Y-%m-%d", errors='coerce')
-    
-    # Check for any invalid dates that were converted to NaT (optional)
-    if log_data["Date"].isna().any():
-        st.warning("Some dates in the log could not be parsed and were set to 'NaT'.")
+    log_data["Date"] = pd.to_datetime(log_data["Date"])
+
     
     if time_filter == "Daily":
         daily_data = log_data.groupby("Date", as_index=False).sum()  # Keep 'Date' as a column

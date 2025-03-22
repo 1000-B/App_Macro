@@ -134,16 +134,16 @@ else:
                 "Carbs": carbs,
                 "Fats": fats
             }
-            
+
             # Convert food_data to DataFrame before saving
             df_new_food = pd.DataFrame([new_entry])  # Convert single entry to DataFrame
-            
+
             # Save new food to Google Sheets
             food_sheet.append_rows(df_new_food.values.tolist())
-            
+
             # Update local food_data dictionary
             food_data[food] = {"Unit": unit, "Protein": protein, "Carbs": carbs, "Fats": fats}
-            
+
             st.success(f"{food} has been added to the database!")
 
 
@@ -195,8 +195,12 @@ def plot_macros(filtered_data):
 
 log_data = pd.DataFrame(log_sheet.get_all_records())
 if not log_data.empty:
-    log_data["Date"] = pd.to_datetime(log_data["Date"])
-
+    # Attempt to convert 'Date' column to datetime format without specifying a format
+    log_data["Date"] = pd.to_datetime(log_data["Date"], errors='coerce')
+    
+    # Check for any invalid dates that were converted to NaT (optional)
+    if log_data["Date"].isna().any():
+        st.warning("Some dates in the log could not be parsed and were set to 'NaT'.")
     
     if time_filter == "Daily":
         daily_data = log_data.groupby("Date", as_index=False).sum()  # Keep 'Date' as a column
@@ -209,4 +213,5 @@ if not log_data.empty:
     elif time_filter == "Monthly":
         log_data["Month"] = log_data["Date"].dt.to_period("M")
         plot_macros(log_data.groupby("Month", as_index=False).sum())
+
         

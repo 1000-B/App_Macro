@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import gspread
 from google.oauth2.service_account import Credentials
+import json
 
 # Load existing food data or use default
 # def load_food_data():
@@ -12,12 +13,11 @@ from google.oauth2.service_account import Credentials
 #     return {}
 
 # food_data = load_food_data()
-##changing
+
 # Google Sheets authentication
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = Credentials.from_service_account_file("service_account.json", scopes=scope)
-#import json
-#creds = Credentials.from_service_account_info(json.loads(st.secrets["service_account"]), scopes=scope)
+#creds = Credentials.from_service_account_file("service_account.json", scopes=scope)
+creds = Credentials.from_service_account_info(json.loads(st.secrets["service_account"]), scopes=scope)
 client = gspread.authorize(creds)
 
 # Open the Google Sheet

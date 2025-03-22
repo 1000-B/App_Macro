@@ -2,22 +2,48 @@ import streamlit as st
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import gspread
+from google.oauth2.service_account import Credentials
 
 # Load existing food data or use default
+# def load_food_data():
+#     if os.path.exists("food_database.csv"):
+#         return pd.read_csv("food_database.csv", index_col=0).to_dict(orient="index")
+#     return {}
+
+# food_data = load_food_data()
+
+# Google Sheets authentication
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = Credentials.from_service_account_file("service_account.json", scopes=scope)
+client = gspread.authorize(creds)
+
+# Open the Google Sheet
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1mVbGbsThxK9L1mC2-2n_qlC2S0IoPM7zxQYT8DVBiAA/edit?gid=1560030794#gid=1560030794"
+spreadsheet = client.open_by_url(SHEET_URL)
+food_sheet = spreadsheet.worksheet("FoodDatabase")
+log_sheet = spreadsheet.worksheet("FoodLog")
+
+# Load existing food data from Google Sheets
 def load_food_data():
-    if os.path.exists("food_database.csv"):
-        return pd.read_csv("food_database.csv", index_col=0).to_dict(orient="index")
-    return {}
+    data = food_sheet.get_all_records()
+    return {row["Food"]: row for row in data} if data else {}
 
 food_data = load_food_data()
 
-# Save function to update CSV
-def save_food_data():
-    df = pd.DataFrame.from_dict(food_data, orient="index")
-    df.to_csv("food_database.csv")
+# # Save function to update CSV
+# def save_food_data():
+#     df = pd.DataFrame.from_dict(food_data, orient="index")
+#     df.to_csv("food_database.csv")
 
 st.title("Macro Tracker")
 st.subheader("Log Your Food")
+
+def save_food_data():
+    df = pd.DataFrame.from_dict(food_data, orient="index")
+    food_sheet.clear()
+    food_sheet.update([df.columns.values.tolist()] + df.values.tolist())
+
 
 # Step 1: Create list of existing foods + "Add New Food..."
 food_options = ["Add New Food..."] + list(food_data.keys())
@@ -98,20 +124,20 @@ if food in food_data:
             "Fats": fats
         }
 
-        if os.path.exists("food_log.csv"):
-            log_data = pd.read_csv("food_log.csv")
-            log_data = pd.concat([log_data, pd.DataFrame([new_entry])], ignore_index=True)
-        else:
-            log_data = pd.DataFrame([new_entry])
+        existing_log = log_sheet.get_all_records()
+        log_data = pd.DataFrame(existing_log)
+        log_data = pd.concat([log_data, pd.DataFrame([new_entry])], ignore_index=True)
 
-        log_data.to_csv("food_log.csv", index=False)
+        log_sheet.clear()
+        log_sheet.update([log_data.columns.values.tolist()] + log_data.values.tolist())
+
         st.success("Entry Added!")
 
 # Show log
-st.subheader("Food Log")
-if os.path.exists("food_log.csv"):
-    log_data = pd.read_csv("food_log.csv")
+log_data = pd.DataFrame(log_sheet.get_all_records())
+if not log_data.empty:
     st.dataframe(log_data.tail(10))
+
 
 
 # Macro breakdown over time
@@ -123,8 +149,10 @@ def plot_macros(filtered_data):
     filtered_data.set_index("Date")[['Protein', 'Carbs', 'Fats']].plot(kind='bar', ax=ax)
     st.pyplot(fig)
 
-if os.path.exists("food_log.csv"):
+log_data = pd.DataFrame(log_sheet.get_all_records())
+if not log_data.empty:
     log_data["Date"] = pd.to_datetime(log_data["Date"])
+
     
     if time_filter == "Daily":
         daily_data = log_data.groupby("Date", as_index=False).sum()  # Keep 'Date' as a column

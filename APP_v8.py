@@ -17,7 +17,7 @@ import json
 # Google Sheets authentication
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 #creds = Credentials.from_service_account_file("service_account.json", scopes=scope)
-creds = Credentials.from_service_account_info(json.loads(st.secrets["service_account"]), scopes=scope)
+creds = Credentials.from_service_account_info(st.secrets["service_account"], scopes=scope)
 client = gspread.authorize(creds)
 
 # Open the Google Sheet

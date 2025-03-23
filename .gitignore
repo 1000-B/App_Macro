@@ -4,3 +4,5 @@ macro-tracker-454504-bac15697dfae.json
 # Ignore system files  
 __pycache__/  
 *.pyc  
+
+.streamlit/

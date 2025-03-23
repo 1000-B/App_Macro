@@ -134,16 +134,16 @@ else:
                 "Carbs": carbs,
                 "Fats": fats
             }
-
+            
             # Convert food_data to DataFrame before saving
             df_new_food = pd.DataFrame([new_entry])  # Convert single entry to DataFrame
-
+            
             # Save new food to Google Sheets
             food_sheet.append_rows(df_new_food.values.tolist())
-
+            
             # Update local food_data dictionary
             food_data[food] = {"Unit": unit, "Protein": protein, "Carbs": carbs, "Fats": fats}
-
+            
             st.success(f"{food} has been added to the database!")
 
 

@@ -1,10 +1,10 @@
-##production app
 import streamlit as st
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import gspread
 from google.oauth2.service_account import Credentials
+from datetime import datetime
 
 
 
@@ -85,7 +85,13 @@ if food:
     st.info(f":white_check_mark: Selected Food: {food}")
 
 
-quantity = st.number_input("Quantity", min_value=1, step=1)
+#quantity = st.number_input("Quantity", min_value=1, step=1)
+# Get the unit of the selected food (if it exists)
+unit_display = food_data[food]["Unit"] if food in food_data else ""
+
+# Display quantity input along with the unit
+quantity = st.number_input(f"Quantity ({unit_display})", min_value=1, step=1)
+
 
 # Step 4: Handle food selection or new entry
 if food in food_data:
@@ -128,12 +134,14 @@ else:
             st.warning(f"{food} already exists in the database.")
         else:
             # Append new food entry
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             new_entry = {
                 "Food": food,
                 "Unit": unit,
                 "Protein": protein,
                 "Carbs": carbs,
-                "Fats": fats
+                "Fats": fats,
+                "Timestamp": timestamp  # Add timestamp
             }
             
             # Convert food_data to DataFrame before saving
@@ -210,7 +218,3 @@ if not log_data.empty:
     elif time_filter == "Monthly":
         log_data["Month"] = log_data["Date"].dt.to_period("M")
         plot_macros(log_data.groupby("Month", as_index=False).sum())
-
-
-
-        

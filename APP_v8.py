@@ -155,6 +155,22 @@ else:
             
             st.success(f"{food} has been added to the database!")
 
+# ---- Automatically log the newly added food ----
+            factor = quantity if unit == "piece" else quantity / 100
+            logged_entry = {
+                "Date": pd.Timestamp.today().strftime('%d/%m/%Y'),
+                "Food": food,
+                "Quantity": quantity,
+                "Unit": unit,
+                "Protein": protein * factor,
+                "Carbs": carbs * factor,
+                "Fats": fats * factor
+            }
+    
+            # Append the logged entry to Google Sheets
+            log_sheet.append_rows([list(logged_entry.values())])
+            
+            st.success(f"{food} has also been logged with {quantity} {unit}!")
 
 
 #quantity = st.number_input("Quantity", min_value=0.1, step=0.1)

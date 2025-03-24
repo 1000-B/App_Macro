@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import gspread
 from google.oauth2.service_account import Credentials
+from datetime import datetime
 
 
 
@@ -133,12 +134,14 @@ else:
             st.warning(f"{food} already exists in the database.")
         else:
             # Append new food entry
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             new_entry = {
                 "Food": food,
                 "Unit": unit,
                 "Protein": protein,
                 "Carbs": carbs,
-                "Fats": fats
+                "Fats": fats,
+                "Timestamp": timestamp  # Add timestamp
             }
             
             # Convert food_data to DataFrame before saving

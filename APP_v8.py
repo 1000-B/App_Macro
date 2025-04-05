@@ -100,6 +100,7 @@ if food in food_data:
     protein = food_data[food]["Protein"] * factor
     carbs = food_data[food]["Carbs"] * factor
     fats = food_data[food]["Fats"] * factor
+    calories = food_data[food]["Calories"]*factor
 else:
     # New food - Ask for macros
     # New food - Ask for macros
@@ -122,6 +123,7 @@ else:
     protein = st.number_input("Protein (g)", min_value=0.0, format="%.1f")
     carbs = st.number_input("Carbs (g)", min_value=0.0, format="%.1f")
     fats = st.number_input("Fats (g)", min_value=0.0, format="%.1f")
+    calories = st.number_input("Calories", min_value=0.0, format="%.1f")
 
     
 
@@ -141,6 +143,7 @@ else:
                 "Protein": protein,
                 "Carbs": carbs,
                 "Fats": fats,
+                "Calories": calories,
                 "Timestamp": timestamp  # Add timestamp
             }
             
@@ -151,7 +154,7 @@ else:
             food_sheet.append_rows(df_new_food.values.tolist())
             
             # Update local food_data dictionary
-            food_data[food] = {"Unit": unit, "Protein": protein, "Carbs": carbs, "Fats": fats}
+            food_data[food] = {"Unit": unit, "Protein": protein, "Carbs": carbs, "Fats": fats, "Calories": calories}
             
             st.success(f"{food} has been added to the database!")
 
@@ -164,7 +167,8 @@ else:
                 "Unit": unit,
                 "Protein": protein * factor,
                 "Carbs": carbs * factor,
-                "Fats": fats * factor
+                "Fats": fats * factor,
+                "Calories": calories * factor
             }
     
             # Append the logged entry to Google Sheets
@@ -181,6 +185,7 @@ if food in food_data:
     protein = food_data[food]["Protein"] * factor
     carbs = food_data[food]["Carbs"] * factor
     fats = food_data[food]["Fats"] * factor
+    calories = food_data[food]["Calories"] * factor
 
     if st.button("Add to Log"):
         new_entry = {
@@ -190,7 +195,8 @@ if food in food_data:
             "Unit": food_data[food]["Unit"],
             "Protein": protein,
             "Carbs": carbs,
-            "Fats": fats
+            "Fats": fats,
+            "Calories": calories
         }
 
         existing_log = log_sheet.get_all_records()
@@ -215,7 +221,7 @@ time_filter = st.radio("View by:", ("Daily", "Weekly", "Monthly"))
 
 def plot_macros(filtered_data):
     fig, ax = plt.subplots()
-    filtered_data.set_index("Date")[['Protein', 'Carbs', 'Fats']].plot(kind='bar', ax=ax)
+    filtered_data.set_index("Date")[['Protein', 'Carbs', 'Fats', 'Calories']].plot(kind='bar', ax=ax)
     st.pyplot(fig)
 
 log_data = pd.DataFrame(log_sheet.get_all_records())

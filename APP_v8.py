@@ -92,17 +92,19 @@ unit_display = food_data[food]["Unit"] if food in food_data else ""
 # Display quantity input along with the unit
 quantity = st.number_input(f"Quantity ({unit_display})", min_value=1, step=1)
 
+def is_weight_based(unit):
+    return unit.lower() in ["gram", "grams", "g", "ml"]
 
 # Step 4: Handle food selection or new entry
 if food in food_data:
+    unit = food_data[food]["Unit"]  # Get the unit for this food item
     # Existing food - Compute macros
-    factor = quantity if food_data[food]["Unit"] == "piece" else quantity / 100
+    factor = quantity / 100 if is_weight_based(unit) else quantity
     protein = food_data[food]["Protein"] * factor
     carbs = food_data[food]["Carbs"] * factor
     fats = food_data[food]["Fats"] * factor
     calories = food_data[food]["Calories"]*factor
 else:
-    # New food - Ask for macros
     # New food - Ask for macros
     st.warning("Food not found. Enter macros below to save it.")
     
@@ -159,7 +161,8 @@ else:
             st.success(f"{food} has been added to the database!")
 
 # ---- Automatically log the newly added food ----
-            factor = quantity if unit == "piece" else quantity / 100
+            unit = food_data[food]["Unit"]  # Get the unit for this food item
+            factor = quantity / 100 if is_weight_based(unit) else quantity
             logged_entry = {
                 "Date": pd.Timestamp.today().strftime('%d/%m/%Y'),
                 "Food": food,
@@ -181,7 +184,8 @@ else:
 
 # Compute macros if food exists
 if food in food_data:
-    factor = quantity if food_data[food]["Unit"] == "piece" else quantity / 100
+    unit = food_data[food]["Unit"]  # Get the unit for this food item
+    factor = quantity / 100 if is_weight_based(unit) else quantity
     protein = food_data[food]["Protein"] * factor
     carbs = food_data[food]["Carbs"] * factor
     fats = food_data[food]["Fats"] * factor

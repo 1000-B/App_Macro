@@ -107,7 +107,7 @@ else:
     st.warning("Food not found. Enter macros below to save it.")
     
     # Predefined unit options
-    unit_options = ["grams", "pieces", "cups", "tablespoons", "teaspoons", "ml"]
+    unit_options = sorted({row["Unit"] for row in food_data.values() if row.get("Unit")})
     
     # Dropdown for unit selection
     unit = st.selectbox("Select Unit", options=unit_options)

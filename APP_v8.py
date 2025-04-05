@@ -42,8 +42,8 @@ food_data = load_food_data()
 #     df = pd.DataFrame.from_dict(food_data, orient="index")
 #     df.to_csv("food_database.csv")
 
-st.title("Macro Tracker")
-st.subheader("Log Your Food")
+st.markdown("<h1 style='text-align: center;'>You Are What You Eat</h1>", unsafe_allow_html=True)
+st.subheader("Log Your Food Man")
 
 def save_food_data():
     df = pd.DataFrame.from_dict(food_data, orient="index").reset_index()

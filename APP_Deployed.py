@@ -42,8 +42,8 @@ food_data = load_food_data()
 #     df = pd.DataFrame.from_dict(food_data, orient="index")
 #     df.to_csv("food_database.csv")
 
-st.title("Macro Tracker")
-st.subheader("Log Your Food")
+st.markdown("<h1 style='text-align: center;'>You Are What You Eat</h1>", unsafe_allow_html=True)
+st.subheader("Log Your Food Man")
 
 def save_food_data():
     df = pd.DataFrame.from_dict(food_data, orient="index").reset_index()
@@ -92,21 +92,24 @@ unit_display = food_data[food]["Unit"] if food in food_data else ""
 # Display quantity input along with the unit
 quantity = st.number_input(f"Quantity ({unit_display})", min_value=1, step=1)
 
+def is_weight_based(unit):
+    return unit.lower() in ["gram", "grams", "g", "ml"]
 
 # Step 4: Handle food selection or new entry
 if food in food_data:
+    unit = food_data[food]["Unit"]  # Get the unit for this food item
     # Existing food - Compute macros
-    factor = quantity if food_data[food]["Unit"] == "piece" else quantity / 100
+    factor = quantity / 100 if is_weight_based(unit) else quantity
     protein = food_data[food]["Protein"] * factor
     carbs = food_data[food]["Carbs"] * factor
     fats = food_data[food]["Fats"] * factor
+    calories = food_data[food]["Calories"]*factor
 else:
-    # New food - Ask for macros
     # New food - Ask for macros
     st.warning("Food not found. Enter macros below to save it.")
     
     # Predefined unit options
-    unit_options = ["grams", "pieces", "cups", "tablespoons", "teaspoons", "ml"]
+    unit_options = sorted({row["Unit"] for row in food_data.values() if row.get("Unit")})
     
     # Dropdown for unit selection
     unit = st.selectbox("Select Unit", options=unit_options)
@@ -122,6 +125,7 @@ else:
     protein = st.number_input("Protein (g)", min_value=0.0, format="%.1f")
     carbs = st.number_input("Carbs (g)", min_value=0.0, format="%.1f")
     fats = st.number_input("Fats (g)", min_value=0.0, format="%.1f")
+    calories = st.number_input("Calories", min_value=0.0, format="%.1f")
 
     
 
@@ -141,6 +145,7 @@ else:
                 "Protein": protein,
                 "Carbs": carbs,
                 "Fats": fats,
+                "Calories": calories,
                 "Timestamp": timestamp  # Add timestamp
             }
             
@@ -151,20 +156,40 @@ else:
             food_sheet.append_rows(df_new_food.values.tolist())
             
             # Update local food_data dictionary
-            food_data[food] = {"Unit": unit, "Protein": protein, "Carbs": carbs, "Fats": fats}
+            food_data[food] = {"Unit": unit, "Protein": protein, "Carbs": carbs, "Fats": fats, "Calories": calories}
             
             st.success(f"{food} has been added to the database!")
 
+# ---- Automatically log the newly added food ----
+            unit = food_data[food]["Unit"]  # Get the unit for this food item
+            factor = quantity / 100 if is_weight_based(unit) else quantity
+            logged_entry = {
+                "Date": pd.Timestamp.today().strftime('%d/%m/%Y'),
+                "Food": food,
+                "Quantity": quantity,
+                "Unit": unit,
+                "Protein": protein * factor,
+                "Carbs": carbs * factor,
+                "Fats": fats * factor,
+                "Calories": calories * factor
+            }
+    
+            # Append the logged entry to Google Sheets
+            log_sheet.append_rows([list(logged_entry.values())])
+            
+            st.success(f"{food} has also been logged with {quantity} {unit}!")
 
 
 #quantity = st.number_input("Quantity", min_value=0.1, step=0.1)
 
 # Compute macros if food exists
 if food in food_data:
-    factor = quantity if food_data[food]["Unit"] == "piece" else quantity / 100
+    unit = food_data[food]["Unit"]  # Get the unit for this food item
+    factor = quantity / 100 if is_weight_based(unit) else quantity
     protein = food_data[food]["Protein"] * factor
     carbs = food_data[food]["Carbs"] * factor
     fats = food_data[food]["Fats"] * factor
+    calories = food_data[food]["Calories"] * factor
 
     if st.button("Add to Log"):
         new_entry = {
@@ -174,7 +199,8 @@ if food in food_data:
             "Unit": food_data[food]["Unit"],
             "Protein": protein,
             "Carbs": carbs,
-            "Fats": fats
+            "Fats": fats,
+            "Calories": calories
         }
 
         existing_log = log_sheet.get_all_records()
@@ -199,7 +225,7 @@ time_filter = st.radio("View by:", ("Daily", "Weekly", "Monthly"))
 
 def plot_macros(filtered_data):
     fig, ax = plt.subplots()
-    filtered_data.set_index("Date")[['Protein', 'Carbs', 'Fats']].plot(kind='bar', ax=ax)
+    filtered_data.set_index("Date")[['Protein', 'Carbs', 'Fats', 'Calories']].plot(kind='bar', ax=ax)
     st.pyplot(fig)
 
 log_data = pd.DataFrame(log_sheet.get_all_records())

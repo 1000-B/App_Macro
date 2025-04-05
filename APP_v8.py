@@ -213,9 +213,37 @@ if food in food_data:
         st.success("Entry Added!")
 
 # Show log
+#log_data = pd.DataFrame(log_sheet.get_all_records())
+#if not log_data.empty:
+#    st.dataframe(log_data.tail(10))
+
+# Filter today's data
+today_str = pd.Timestamp.today().strftime('%d/%m/%Y')
 log_data = pd.DataFrame(log_sheet.get_all_records())
+log_data = log_data[log_data["Date"] == today_str]
+
 if not log_data.empty:
-    st.dataframe(log_data.tail(10))
+    st.subheader(f"Today's Log ({today_str})")
+    st.dataframe(log_data)
+
+    # Show totals
+    total_protein = log_data["Protein"].sum()
+    total_carbs = log_data["Carbs"].sum()
+    total_fats = log_data["Fats"].sum()
+    total_calories = log_data["Calories"].sum()
+
+    st.markdown("### Daily Totals")
+    st.write(f"**Protein:** {total_protein:.1f} g")
+    st.write(f"**Carbs:** {total_carbs:.1f} g")
+    st.write(f"**Fats:** {total_fats:.1f} g")
+    st.write(f"**Calories:** {total_calories:.1f} kcal")
+
+    # Compare with target
+    target_protein = st.number_input("Your Protein Target (g)", min_value=0.0, format="%.1f", key="protein_target")
+    if target_protein > 0:
+        difference = total_protein - target_protein
+        st.markdown(f"**You are {'over' if difference > 0 else 'under'} your protein target by {abs(difference):.1f}g.**")
+
 
 
 

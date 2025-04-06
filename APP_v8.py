@@ -45,6 +45,9 @@ food_data = load_food_data()
 st.markdown("<h1 style='text-align: center;'>You Are What You Eat</h1>", unsafe_allow_html=True)
 st.subheader("Log Your Food Man")
 
+selected_date = st.date_input("Choose log date", value=datetime.today())
+log_date_str = selected_date.strftime('%d/%m/%Y')
+
 def save_food_data():
     df = pd.DataFrame.from_dict(food_data, orient="index").reset_index()
     df.rename(columns={"index": "Food"}, inplace=True)  
@@ -164,7 +167,7 @@ else:
             unit = food_data[food]["Unit"]  # Get the unit for this food item
             factor = quantity / 100 if is_weight_based(unit) else quantity
             logged_entry = {
-                "Date": pd.Timestamp.today().strftime('%d/%m/%Y'),
+                "Date": log_date_str,
                 "Food": food,
                 "Quantity": quantity,
                 "Unit": unit,
@@ -193,7 +196,7 @@ if food in food_data:
 
     if st.button("Add to Log"):
         new_entry = {
-            "Date": pd.Timestamp.today().strftime('%d/%m/%Y'),
+            "Date": log_date_str,
             "Food": food,
             "Quantity": quantity,
             "Unit": food_data[food]["Unit"],
@@ -218,12 +221,12 @@ if food in food_data:
 #    st.dataframe(log_data.tail(10))
 
 # Filter today's data
-today_str = pd.Timestamp.today().strftime('%d/%m/%Y')
 log_data = pd.DataFrame(log_sheet.get_all_records())
-log_data = log_data[log_data["Date"] == today_str]
+log_data = log_data[log_data["Date"] == log_date_str]
+
 
 if not log_data.empty:
-    st.subheader(f"Today's Log ({today_str})")
+    st.subheader(f"Today's Log ({log_date_str})")
     st.dataframe(log_data)
 
     # Show totals
@@ -238,14 +241,14 @@ if not log_data.empty:
     col2.metric("Carbs (g)", f"{total_carbs:.1f}")
     col3.metric("Fats (g)", f"{total_fats:.1f}")
     col4.metric("Calories", f"{total_calories:.1f}")
-    
+
     # Protein target input and progress bar
     st.markdown("### 🎯 Protein Goal Tracker")
     target_protein = st.number_input("Your Protein Target (g)", min_value=0.0, format="%.1f", key="protein_target")
     if target_protein > 0:
         protein_percent = min((total_protein / target_protein) * 100, 100)
         st.progress(protein_percent / 100, text=f"{protein_percent:.1f}% of your goal")
-        
+
         difference = total_protein - target_protein
         if difference < 0:
             st.info(f"You need {abs(difference):.1f}g more protein to reach your goal.")

@@ -45,7 +45,15 @@ food_data = load_food_data()
 st.markdown("<h1 style='text-align: center;'>You Are What You Eat</h1>", unsafe_allow_html=True)
 st.subheader("Log Your Food Man")
 
-selected_date = st.date_input("Choose log date", value=datetime.today())
+from datetime import datetime
+
+# Default: today's date
+selected_date = datetime.today().date()
+
+# Advanced options toggle
+with st.expander("🔧 Advanced Options"):
+    selected_date = st.date_input("Select Date to Log", value=datetime.today().date())
+
 log_date_str = selected_date.strftime('%d/%m/%Y')
 
 def save_food_data():
@@ -244,7 +252,7 @@ if not log_data.empty:
 
     # Protein target input and progress bar
     st.markdown("### 🎯 Protein Goal Tracker")
-    target_protein = st.number_input("Your Protein Target (g)", min_value=0.0, format="%.1f", key="protein_target")
+    target_protein = st.number_input("Your Protein Target (g)", min_value=0.0,value=110.0, format="%.1f", key="protein_target")
     if target_protein > 0:
         protein_percent = min((total_protein / target_protein) * 100, 100)
         st.progress(protein_percent / 100, text=f"{protein_percent:.1f}% of your goal")

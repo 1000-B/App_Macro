@@ -45,6 +45,17 @@ food_data = load_food_data()
 st.markdown("<h1 style='text-align: center;'>You Are What You Eat</h1>", unsafe_allow_html=True)
 st.subheader("Log Your Food Man")
 
+from datetime import datetime
+
+# Default: today's date
+selected_date = datetime.today().date()
+
+# Advanced options toggle
+with st.expander("🔧 Advanced Options"):
+    selected_date = st.date_input("Select Date to Log", value=datetime.today().date())
+
+log_date_str = selected_date.strftime('%d/%m/%Y')
+
 def save_food_data():
     df = pd.DataFrame.from_dict(food_data, orient="index").reset_index()
     df.rename(columns={"index": "Food"}, inplace=True)  
@@ -164,7 +175,7 @@ else:
             unit = food_data[food]["Unit"]  # Get the unit for this food item
             factor = quantity / 100 if is_weight_based(unit) else quantity
             logged_entry = {
-                "Date": pd.Timestamp.today().strftime('%d/%m/%Y'),
+                "Date": log_date_str,
                 "Food": food,
                 "Quantity": quantity,
                 "Unit": unit,
@@ -193,7 +204,7 @@ if food in food_data:
 
     if st.button("Add to Log"):
         new_entry = {
-            "Date": pd.Timestamp.today().strftime('%d/%m/%Y'),
+            "Date": log_date_str,
             "Food": food,
             "Quantity": quantity,
             "Unit": food_data[food]["Unit"],
@@ -213,9 +224,44 @@ if food in food_data:
         st.success("Entry Added!")
 
 # Show log
+#log_data = pd.DataFrame(log_sheet.get_all_records())
+#if not log_data.empty:
+#    st.dataframe(log_data.tail(10))
+
+# Filter today's data
 log_data = pd.DataFrame(log_sheet.get_all_records())
+log_data = log_data[log_data["Date"] == log_date_str]
+
+
 if not log_data.empty:
-    st.dataframe(log_data.tail(10))
+    st.subheader(f"Today's Log ({log_date_str})")
+    st.dataframe(log_data)
+
+    # Show totals
+    total_protein = log_data["Protein"].sum()
+    total_carbs = log_data["Carbs"].sum()
+    total_fats = log_data["Fats"].sum()
+    total_calories = log_data["Calories"].sum()
+
+    # Show totals in columns
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Protein (g)", f"{total_protein:.1f}")
+    col2.metric("Carbs (g)", f"{total_carbs:.1f}")
+    col3.metric("Fats (g)", f"{total_fats:.1f}")
+    col4.metric("Calories", f"{total_calories:.1f}")
+
+    # Protein target input and progress bar
+    st.markdown("### 🎯 Protein Goal Tracker")
+    target_protein = st.number_input("Your Protein Target (g)", min_value=0.0,value=110.0, format="%.1f", key="protein_target")
+    if target_protein > 0:
+        protein_percent = min((total_protein / target_protein) * 100, 100)
+        st.progress(protein_percent / 100, text=f"{protein_percent:.1f}% of your goal")
+
+        difference = total_protein - target_protein
+        if difference < 0:
+            st.info(f"You need {abs(difference):.1f}g more protein to reach your goal.")
+        else:
+            st.success(f"🎉 You've exceeded your protein goal by {difference:.1f}g!")
 
 
 

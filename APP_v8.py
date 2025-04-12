@@ -284,28 +284,28 @@ if 'full_log_data' not in st.session_state:
     st.session_state['full_log_data'] = pd.DataFrame(log_sheet.get_all_records())
 
 
-"""# Macro breakdown over time
-st.subheader("Macro Breakdown")
-time_filter = st.radio("View by:", ("Daily", "Weekly", "Monthly"))
-
-def plot_macros(filtered_data):
-    fig, ax = plt.subplots()
-    filtered_data.set_index("Date")[['Protein', 'Carbs', 'Fats', 'Calories']].plot(kind='bar', ax=ax)
-    st.pyplot(fig)
-
-log_data = pd.DataFrame(log_sheet.get_all_records())
-if not log_data.empty:
-    log_data["Date"] = pd.to_datetime(log_data["Date"])
-
-    
-    if time_filter == "Daily":
-        daily_data = log_data.groupby("Date", as_index=False).sum()  # Keep 'Date' as a column
-        plot_macros(daily_data)
-
-    elif time_filter == "Weekly":
-        log_data["Week"] = log_data["Date"].dt.to_period("W")
-        plot_macros(log_data.groupby("Week", as_index=False).sum())
-
-    elif time_filter == "Monthly":
-        log_data["Month"] = log_data["Date"].dt.to_period("M")
-        plot_macros(log_data.groupby("Month", as_index=False).sum())"""
+# Macro breakdown over time
+# st.subheader("Macro Breakdown")
+# time_filter = st.radio("View by:", ("Daily", "Weekly", "Monthly"))
+# 
+# def plot_macros(filtered_data):
+    # fig, ax = plt.subplots()
+    # filtered_data.set_index("Date")[['Protein', 'Carbs', 'Fats', 'Calories']].plot(kind='bar', ax=ax)
+    # st.pyplot(fig)
+# 
+# log_data = pd.DataFrame(log_sheet.get_all_records())
+# if not log_data.empty:
+    # log_data["Date"] = pd.to_datetime(log_data["Date"])
+# 
+    # 
+    # if time_filter == "Daily":
+        # daily_data = log_data.groupby("Date", as_index=False).sum()  # Keep 'Date' as a column
+        # plot_macros(daily_data)
+# 
+    # elif time_filter == "Weekly":
+        # log_data["Week"] = log_data["Date"].dt.to_period("W")
+        # plot_macros(log_data.groupby("Week", as_index=False).sum())
+# 
+    # elif time_filter == "Monthly":
+        # log_data["Month"] = log_data["Date"].dt.to_period("M")
+        # plot_macros(log_data.groupby("Month", as_index=False).sum())

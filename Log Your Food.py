@@ -51,7 +51,7 @@ from datetime import datetime
 selected_date = datetime.today().date()
 
 # Advanced options toggle
-with st.expander("🔧 Advanced Options"):
+with st.expander("🔧 Advanced Options\"):
     selected_date = st.date_input("Select Date to Log", value=datetime.today().date())
 
 log_date_str = selected_date.strftime('%d/%m/%Y')

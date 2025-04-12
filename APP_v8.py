@@ -223,6 +223,11 @@ if food in food_data:
 
         st.success("Entry Added!")
 
+
+st.session_state.pop('log_data_today', None)
+st.session_state.pop('total_macros', None)
+st.session_state.pop('full_log_data', None)
+
 # Show log
 #log_data = pd.DataFrame(log_sheet.get_all_records())
 #if not log_data.empty:
@@ -263,6 +268,20 @@ if not log_data.empty:
         else:
             st.success(f"🎉 You've exceeded your protein goal by {difference:.1f}g!")
 
+
+if 'log_data_today' not in st.session_state:
+    st.session_state['log_data_today'] = log_data
+
+if 'total_macros' not in st.session_state:
+    st.session_state['total_macros'] = {
+        'protein': total_protein,
+        'carbs': total_carbs,
+        'fats': total_fats,
+        'calories': total_calories
+    }
+
+if 'full_log_data' not in st.session_state:
+    st.session_state['full_log_data'] = pd.DataFrame(log_sheet.get_all_records())
 
 
 # Macro breakdown over time

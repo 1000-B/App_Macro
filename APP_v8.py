@@ -247,12 +247,12 @@ total_protein = log_data["Protein"].sum()
 total_carbs = log_data["Carbs"].sum()
 total_fats = log_data["Fats"].sum()
 total_calories = log_data["Calories"].sum()
-# Show totals in columns
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Protein (g)", f"{total_protein:.1f}")
-col2.metric("Carbs (g)", f"{total_carbs:.1f}")
-col3.metric("Fats (g)", f"{total_fats:.1f}")
-col4.metric("Calories", f"{total_calories:.1f}")
+# # Show totals in columns
+# col1, col2, col3, col4 = st.columns(4)
+# col1.metric("Protein (g)", f"{total_protein:.1f}")
+# col2.metric("Carbs (g)", f"{total_carbs:.1f}")
+# col3.metric("Fats (g)", f"{total_fats:.1f}")
+# col4.metric("Calories", f"{total_calories:.1f}")
 
     # # Protein target input and progress bar
     # st.markdown("### 🎯 Protein Goal Tracker")

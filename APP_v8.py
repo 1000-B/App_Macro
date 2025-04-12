@@ -284,7 +284,7 @@ if 'full_log_data' not in st.session_state:
     st.session_state['full_log_data'] = pd.DataFrame(log_sheet.get_all_records())
 
 
-# Macro breakdown over time
+"""# Macro breakdown over time
 st.subheader("Macro Breakdown")
 time_filter = st.radio("View by:", ("Daily", "Weekly", "Monthly"))
 
@@ -308,4 +308,4 @@ if not log_data.empty:
 
     elif time_filter == "Monthly":
         log_data["Month"] = log_data["Date"].dt.to_period("M")
-        plot_macros(log_data.groupby("Month", as_index=False).sum())
+        plot_macros(log_data.groupby("Month", as_index=False).sum())"""

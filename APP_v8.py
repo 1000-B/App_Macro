@@ -268,16 +268,16 @@ if not log_data.empty:
             st.success(f"🎉 You've exceeded your protein goal by {difference:.1f}g!")
 
 
-if 'log_data_today' not in st.session_state:
-    st.session_state['log_data_today'] = log_data
-
-if 'total_macros' not in st.session_state:
-    st.session_state['total_macros'] = {
-        'protein': total_protein,
-        'carbs': total_carbs,
-        'fats': total_fats,
-        'calories': total_calories
-    }
+    if 'log_data_today' not in st.session_state:
+        st.session_state['log_data_today'] = log_data
+    
+    if 'total_macros' not in st.session_state:
+        st.session_state['total_macros'] = {
+            'protein': total_protein,
+            'carbs': total_carbs,
+            'fats': total_fats,
+            'calories': total_calories
+        }
 
 if 'full_log_data' not in st.session_state:
     st.session_state['full_log_data'] = pd.DataFrame(log_sheet.get_all_records())

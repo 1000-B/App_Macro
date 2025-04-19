@@ -1,10 +1,12 @@
 
-st.title("📊 Dashboard")
+
 
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+
+st.title("📊 Dashboard")
 
 # Get the full food log
 log_data = pd.DataFrame(st.session_state['full_log_data'])

@@ -61,7 +61,7 @@ with st.expander("🔧 Advanced Options"):
     delete_target = st.radio("Choose what to delete", ["Food Log Entry", "Food Database Entry"])
     if delete_target == "Food Log Entry":
         full_log_df = pd.DataFrame(log_sheet.get_all_records())
-        full_log_df.index += 1  # Because row 1 is headers, row 2 is first data row in Sheets
+        full_log_df.index += 2  # Because row 1 is headers, row 2 is first data row in Sheets
         st.dataframe(full_log_df)
         row_to_delete = st.number_input("Enter the row number to delete from Food Log", min_value=2, max_value=len(full_log_df) + 1, step=1)
         if st.button("Delete Row from Food Log"):
@@ -69,7 +69,7 @@ with st.expander("🔧 Advanced Options"):
             st.success(f"Deleted row {row_to_delete} from Food Log")
     elif delete_target == "Food Database Entry":
         food_df = pd.DataFrame(food_sheet.get_all_records())
-        food_df.index += 1  # Same logic: first data row starts at 2 in Sheets
+        food_df.index += 2  # Same logic: first data row starts at 2 in Sheets
         st.dataframe(food_df)
         row_to_delete = st.number_input("Enter the row number to delete from Food Database", min_value=2, max_value=len(food_df) + 1, step=1)
         if st.button("Delete Row from Food Database"):

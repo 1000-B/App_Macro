@@ -82,18 +82,35 @@ with st.expander("🔧 Advanced Options"):
     st.markdown("---")
     st.markdown("### 🗑️ Delete Entries by Row Number")
     delete_target = st.radio("Choose what to delete", ["Food Log Entry", "Food Database Entry"])
+    
     if delete_target == "Food Log Entry":
-        st.dataframe(st.session_state.log_data_full.tail(10))  # ✅ use session_state
-        row_to_delete = st.number_input("Enter the row number to delete from Food Log", min_value=2, max_value=len(st.session_state.log_data_full)+3, step=1)
+        df = st.session_state.log_data_full
+        st.dataframe(df.tail(10))  # ✅ Display last 10 entries with index
+        row_index_to_delete = st.number_input(
+            "Enter the DataFrame index to delete from Food Log", 
+            min_value=int(df.index.min()), 
+            max_value=int(df.index.max()), 
+            step=1
+        )
         if st.button("Delete Row from Food Log"):
-            log_sheet.delete_rows(row_to_delete)
-            st.success(f"Deleted row {row_to_delete} from Food Log")
+            sheet_row_to_delete = row_index_to_delete + 2  # +1 for header, +1 for 1-based indexing
+            log_sheet.delete_rows(sheet_row_to_delete)
+            st.success(f"Deleted DataFrame index {row_index_to_delete} (Sheet row {sheet_row_to_delete}) from Food Log")
+    
     elif delete_target == "Food Database Entry":
-        st.dataframe(st.session_state.food_data_full)  # ✅ use session_state
-        row_to_delete = st.number_input("Enter the row number to delete from Food Database", min_value=2, max_value=len(st.session_state.food_data_full)+3, step=1)
+        df = st.session_state.food_data_full
+        st.dataframe(df)
+        row_index_to_delete = st.number_input(
+            "Enter the DataFrame index to delete from Food Database", 
+            min_value=int(df.index.min()), 
+            max_value=int(df.index.max()), 
+            step=1
+        )
         if st.button("Delete Row from Food Database"):
-            food_sheet.delete_rows(row_to_delete)
-            st.success(f"Deleted row {row_to_delete} from Food Database")
+            sheet_row_to_delete = row_index_to_delete + 2
+            food_sheet.delete_rows(sheet_row_to_delete)
+            st.success(f"Deleted DataFrame index {row_index_to_delete} (Sheet row {sheet_row_to_delete}) from Food Database")
+
 
 
 def save_food_data():

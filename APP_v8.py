@@ -122,10 +122,10 @@ def is_weight_based(unit):
     return unit.lower() in ["gram", "grams", "g", "ml"]
 
 # --- Frequently Used Food Buttons ---
-st.markdown("### ⚡ Quick Add: Frequent Foods")
+st.markdown("### ⚡ Quick Add")
 
 # Define your frequent food list
-frequent_food_names = ["Banana", "Oats", "Chicken Breast", "Almonds"]
+frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Coffee", "Decaf Coffee"]  # You define this list
 
 # Set how many buttons per row
 buttons_per_row = 4

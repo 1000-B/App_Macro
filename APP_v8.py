@@ -50,6 +50,9 @@ from datetime import datetime
 # Default: today's date
 selected_date = datetime.today().date()
 
+def is_weight_based(unit):
+    return unit.lower() in ["gram", "grams", "g", "ml"]
+
 # Advanced options toggle
 with st.expander("🔧 Advanced Options"):
     selected_date = st.date_input("Select Date to Log", value=datetime.today().date())
@@ -64,6 +67,44 @@ with st.expander("🔧 Advanced Options"):
             st.success("Deleted the latest entry from the Food Log.")
         else:
             st.warning("Food Log is empty.")
+
+    st.markdown("---")
+    # --- Frequently Used Food Buttons ---
+    st.markdown("### ⚡ Quick Add")
+
+    # Define your frequent food list
+    frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Coffee", "Decaf Coffee"]  # You define this list
+
+    # Set how many buttons per row
+    buttons_per_row = 4
+
+    # Create buttons in rows using st.columns
+    for i in range(0, len(frequent_food_names), buttons_per_row):
+        cols = st.columns(buttons_per_row)
+        for j, food_name in enumerate(frequent_food_names[i:i+buttons_per_row]):
+            with cols[j]:
+                if st.button(food_name):
+                    if food_name in food_data:
+                        unit = food_data[food_name]["Unit"]
+                        default_qty = 100 if is_weight_based(unit) else 1
+                        factor = default_qty / 100 if is_weight_based(unit) else default_qty
+
+                        new_entry = {
+                            "Date": log_date_str,
+                            "Food": food_name,
+                            "Quantity": default_qty,
+                            "Unit": unit,
+                            "Protein": food_data[food_name]["Protein"] * factor,
+                            "Carbs": food_data[food_name]["Carbs"] * factor,
+                            "Fats": food_data[food_name]["Fats"] * factor,
+                            "Calories": food_data[food_name]["Calories"] * factor,
+                        }
+
+                        log_sheet.append_rows([list(new_entry.values())])
+                        st.success(f"{food_name} ({default_qty} {unit}) added to log!")
+                    else:
+                        st.warning(f"{food_name} not found in Food Database.")
+
 
         # ✅ NEW: Refresh button and session cache
     st.markdown("---")
@@ -82,7 +123,7 @@ with st.expander("🔧 Advanced Options"):
     st.markdown("---")
     st.markdown("### 🗑️ Delete Entries by Row Number")
     delete_target = st.radio("Choose what to delete", ["Food Log Entry", "Food Database Entry"])
-    
+
     if delete_target == "Food Log Entry":
         df = st.session_state.log_data_full
         st.dataframe(df.tail(10))  # ✅ Display last 10 entries with index
@@ -96,7 +137,7 @@ with st.expander("🔧 Advanced Options"):
             sheet_row_to_delete = row_index_to_delete + 2  # +1 for header, +1 for 1-based indexing
             log_sheet.delete_rows(sheet_row_to_delete)
             st.success(f"Deleted DataFrame index {row_index_to_delete} (Sheet row {sheet_row_to_delete}) from Food Log")
-    
+
     elif delete_target == "Food Database Entry":
         df = st.session_state.food_data_full
         st.dataframe(df)
@@ -154,48 +195,6 @@ else:
 if food:
     st.info(f":white_check_mark: Selected Food: {food}")
 
-def is_weight_based(unit):
-    return unit.lower() in ["gram", "grams", "g", "ml"]
-
-# --- Frequently Used Food Buttons ---
-st.markdown("### ⚡ Quick Add")
-
-# Define your frequent food list
-frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Coffee", "Decaf Coffee"]  # You define this list
-
-# Set how many buttons per row
-buttons_per_row = 4
-
-# Create buttons in rows using st.columns
-for i in range(0, len(frequent_food_names), buttons_per_row):
-    cols = st.columns(buttons_per_row)
-    for j, food_name in enumerate(frequent_food_names[i:i+buttons_per_row]):
-        with cols[j]:
-            if st.button(food_name):
-                if food_name in food_data:
-                    unit = food_data[food_name]["Unit"]
-                    default_qty = 100 if is_weight_based(unit) else 1
-                    factor = default_qty / 100 if is_weight_based(unit) else default_qty
-
-                    new_entry = {
-                        "Date": log_date_str,
-                        "Food": food_name,
-                        "Quantity": default_qty,
-                        "Unit": unit,
-                        "Protein": food_data[food_name]["Protein"] * factor,
-                        "Carbs": food_data[food_name]["Carbs"] * factor,
-                        "Fats": food_data[food_name]["Fats"] * factor,
-                        "Calories": food_data[food_name]["Calories"] * factor,
-                    }
-
-                    log_sheet.append_rows([list(new_entry.values())])
-                    st.success(f"{food_name} ({default_qty} {unit}) added to log!")
-                else:
-                    st.warning(f"{food_name} not found in Food Database.")
-
-
-
-#quantity = st.number_input("Quantity", min_value=1, step=1)
 # Get the unit of the selected food (if it exists)
 unit_display = food_data[food]["Unit"] if food in food_data else ""
 

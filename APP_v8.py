@@ -99,6 +99,8 @@ duplicates = set([food for food in existing_foods if existing_foods.count(food) 
 if duplicates:
     st.error(f"Duplicate foods in Google Sheets: {duplicates}. Please remove them.")
 
+
+
 # Step 1: Create list of existing foods + "Add New Food..."
 food_options = ["Add New Food..."] + list(food_data.keys())
 
@@ -115,6 +117,37 @@ else:
 # Step 4: Show confirmation of selection
 if food:
     st.info(f":white_check_mark: Selected Food: {food}")
+
+def is_weight_based(unit):
+    return unit.lower() in ["gram", "grams", "g", "ml"]
+
+# --- Frequently Used Food Buttons ---
+st.markdown("### ⚡ Quick Add: Frequent Foods")
+
+# Define the food names you want buttons for
+frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Coffee", "Decaf Coffee"]  # You define this list
+
+for name in frequent_food_names:
+    if st.button(f"{name}"):
+        if name in food_data:
+            unit = food_data[name]["Unit"]
+            default_qty = 1
+
+            new_entry = {
+                "Date": log_date_str,
+                "Food": name,
+                "Quantity": default_qty,
+                "Unit": unit,
+                "Protein": food_data[name]["Protein"] ,
+                "Carbs": food_data[name]["Carbs"] ,
+                "Fats": food_data[name]["Fats"] ,
+                "Calories": food_data[name]["Calories"] 
+            }
+
+            log_sheet.append_rows([list(new_entry.values())])
+            st.success(f"{name} ({default_qty} {unit}) added to log!")
+        else:
+            st.warning(f"{name} not found in Food Database.")
 
 
 #quantity = st.number_input("Quantity", min_value=1, step=1)

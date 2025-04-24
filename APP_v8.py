@@ -71,7 +71,7 @@ with st.expander("🔧 Advanced Options"):
         full_log_df = pd.DataFrame(log_sheet.get_all_records())
         full_log_df.index  # Because row 1 is headers, row 2 is first data row in Sheets
         st.dataframe(full_log_df.tail(10))  # Show only the latest 10 rows
-        row_to_delete = st.number_input("Enter the row number to delete from Food Log", min_value=2, max_value=len(full_log_df) + 1, step=1)
+        row_to_delete = st.number_input("Enter the row number to delete from Food Log", min_value=2, max_value=len(full_log_df) , step=1)
         if st.button("Delete Row from Food Log"):
             log_sheet.delete_rows(row_to_delete)
             st.success(f"Deleted row {row_to_delete} from Food Log")
@@ -79,7 +79,7 @@ with st.expander("🔧 Advanced Options"):
         food_df = pd.DataFrame(food_sheet.get_all_records())
         food_df.index  # Same logic: first data row starts at 2 in Sheets
         st.dataframe(food_df)
-        row_to_delete = st.number_input("Enter the row number to delete from Food Database", min_value=2, max_value=len(food_df) + 1, step=1)
+        row_to_delete = st.number_input("Enter the row number to delete from Food Database", min_value=2, max_value=len(food_df) , step=1)
         if st.button("Delete Row from Food Database"):
             food_sheet.delete_rows(row_to_delete)
             st.success(f"Deleted row {row_to_delete} from Food Database")

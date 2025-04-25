@@ -1,46 +1,81 @@
 import streamlit as st
 import pandas as pd
 import random
-from google.oauth2.service_account import Credentials
+from datetime import date
 import gspread
+from google.oauth2.service_account import Credentials
 
-# Google Sheets auth
+# Google Sheets authentication
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = Credentials.from_service_account_info(st.secrets["service_account"], scopes=scope)
 client = gspread.authorize(creds)
 
-# Open sheet and read Quotes
+# Open the sheet
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1mVbGbsThxK9L1mC2-2n_qlC2S0IoPM7zxQYT8DVBiAA/edit#gid=2056045424"
 spreadsheet = client.open_by_url(SHEET_URL)
 quotes_sheet = spreadsheet.worksheet("Quotes")
 
-# Load data into DataFrame
-quotes_data = quotes_sheet.get_all_records()
-quotes_df = pd.DataFrame(quotes_data)
+# Load data
+data = pd.DataFrame(quotes_sheet.get_all_records())
 
-st.title("📖 Daily Quotes & Mantras")
+# Function to get a deterministic daily random row
+def get_daily_random_row(df, seed_date):
+    if df.empty:
+        return None
+    random.seed(seed_date.toordinal())
+    return df.sample(n=1, random_state=random.randint(0, 100000)).iloc[0]
 
-# Helper to show quote or mantra
-def display_entry(entry, title):
-    st.markdown(f"#### {title}")
-    st.markdown(f"**Date**: {entry['Date']}  ")
-    st.markdown(f"**Source**: {entry['Source']}  ")
-    st.markdown(f"**Details1**: {entry['Details1']}  ")
-    st.markdown(f"**Details2**: {entry['Details2']}  ")
-    st.markdown("---")
-    st.markdown(f"### *{entry['Quote']}*")
-    st.markdown("---")
+# --- Quotes Section ---
+st.header("💬 Today's Quote")
 
-### SECTION 1: QUOTE
-quote_candidates = quotes_df[quotes_df["Details1"] != "Mantras"]
-if "quote_entry" not in st.session_state or st.button("📝 Display Another Quote"):
-    st.session_state.quote_entry = quote_candidates.sample(1).iloc[0]
+quotes_df = data[data["Details1"].str.lower() != "mantras"]
+daily_quote = get_daily_random_row(quotes_df, date.today())
 
-display_entry(st.session_state.quote_entry, "Today's Quote")
+if daily_quote is not None:
+    st.markdown(f"**Date:** {daily_quote['Date']}")
+    st.markdown(f"**Source:** {daily_quote['Source']}")
+    st.markdown(f"**Details1:** {daily_quote['Details1']}")
+    st.markdown(f"**Details2:** {daily_quote['Details2']}")
+    st.subheader("📜 Today's Quote")
+    st.write(f"_{daily_quote['Quote']}_")
 
-### SECTION 2: MANTRA
-mantra_candidates = quotes_df[quotes_df["Details1"] == "Mantras"]
-if "mantra_entry" not in st.session_state or st.button("🧘 Display Another Mantra"):
-    st.session_state.mantra_entry = mantra_candidates.sample(1).iloc[0]
+    if st.button("Display Another Quote"):
+        st.session_state['quote_random'] = quotes_df.sample(n=1).iloc[0]
 
-display_entry(st.session_state.mantra_entry, "Daily Mantra")
+    if 'quote_random' in st.session_state:
+        st.markdown("---")
+        st.subheader("🔁 Another Random Quote")
+        q = st.session_state['quote_random']
+        st.markdown(f"**Date:** {q['Date']}")
+        st.markdown(f"**Source:** {q['Source']}")
+        st.markdown(f"**Details1:** {q['Details1']}")
+        st.markdown(f"**Details2:** {q['Details2']}")
+        st.write(f"_{q['Quote']}_")
+
+# --- Mantras Section ---
+st.header("🧘‍♂️ Today's Mantra")
+
+mantras_df = data[data["Details1"].str.lower() == "mantras"]
+daily_mantra = get_daily_random_row(mantras_df, date.today())
+
+if daily_mantra is not None:
+    st.markdown(f"**Date:** {daily_mantra['Date']}")
+    st.markdown(f"**Source:** {daily_mantra['Source']}")
+    st.markdown(f"**Details1:** {daily_mantra['Details1']}")
+    st.markdown(f"**Details2:** {daily_mantra['Details2']}")
+    st.subheader("📿 Today's Mantra")
+    st.write(f"_{daily_mantra['Quote']}_")
+
+    if st.button("Display Another Mantra"):
+        st.session_state['mantra_random'] = mantras_df.sample(n=1).iloc[0]
+
+    if 'mantra_random' in st.session_state:
+        st.markdown("---")
+        st.subheader("🔁 Another Random Mantra")
+        m = st.session_state['mantra_random']
+        st.markdown(f"**Date:** {m['Date']}")
+        st.markdown(f"**Source:** {m['Source']}")
+        st.markdown(f"**Details1:** {m['Details1']}")
+        st.markdown(f"**Details2:** {m['Details2']}")
+        st.write(f"_{m['Quote']}_")
+

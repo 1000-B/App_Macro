@@ -26,7 +26,7 @@ def get_daily_random_row(df, seed_date):
     return df.sample(n=1, random_state=random.randint(0, 100000)).iloc[0]
 
 # --- Quotes Section ---
-st.header("📜 Today's Quote")
+st.subheader("📜 Today's Quote")
 
 quotes_df = data[data["Details1"].str.lower() != "mantras"]
 
@@ -38,9 +38,9 @@ q = st.session_state['quote_random']
 
 # Display the current quote
 st.markdown(f"**Date:** {q['Date']}")
+st.markdown(f"**Source Type:** {q['Source Type']}")
 st.markdown(f"**Source:** {q['Source']}")
-st.markdown(f"**Details1:** {q['Details1']}")
-st.markdown(f"**Details2:** {q['Details2']}")
+st.markdown(f"**Details:** {q['Details1']}, {q['Details2']}")
 st.write(f"_{q['Quote']}_")
 
 # Button to get a new random quote
@@ -50,7 +50,7 @@ if st.button("Display Another Quote"):
 
 
 # --- Mantras Section ---
-st.header("🧘‍♂️ Today's Mantra")
+st.subheader("🧘‍♂️ Today's Mantra")
 
 mantras_df = data[data["Details1"].str.lower() == "mantras"]
 
@@ -62,9 +62,9 @@ m = st.session_state['mantra_random']
 
 # Display the current mantra
 st.markdown(f"**Date:** {m['Date']}")
+st.markdown(f"**Source Type:** {q['Source Type']}")
 st.markdown(f"**Source:** {m['Source']}")
-st.markdown(f"**Details1:** {m['Details1']}")
-st.markdown(f"**Details2:** {m['Details2']}")
+st.markdown(f"**Details:** {q['Details1']}, {q['Details2']}")
 st.write(f"_{m['Quote']}_")
 
 # Button to get a new random mantra

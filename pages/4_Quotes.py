@@ -46,7 +46,7 @@ st.write(f"_{q['Quote']}_")
 # Button to get a new random quote
 if st.button("Display Another Quote"):
     st.session_state['quote_random'] = quotes_df.sample(n=1).iloc[0]
-    st.experimental_rerun()
+    st.rerun()
 
 
 # --- Mantras Section ---
@@ -70,6 +70,6 @@ st.write(f"_{m['Quote']}_")
 # Button to get a new random mantra
 if st.button("Display Another Mantra"):
     st.session_state['mantra_random'] = mantras_df.sample(n=1).iloc[0]
-    st.experimental_rerun()
+    st.rerun()
 
 

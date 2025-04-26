@@ -26,56 +26,50 @@ def get_daily_random_row(df, seed_date):
     return df.sample(n=1, random_state=random.randint(0, 100000)).iloc[0]
 
 # --- Quotes Section ---
-st.header("💬 Today's Quote")
+st.header("📜 Today's Quote")
 
 quotes_df = data[data["Details1"].str.lower() != "mantras"]
-daily_quote = get_daily_random_row(quotes_df, date.today())
 
-if daily_quote is not None:
-    st.markdown(f"**Date:** {daily_quote['Date']}")
-    st.markdown(f"**Source:** {daily_quote['Source']}")
-    st.markdown(f"**Details1:** {daily_quote['Details1']}")
-    st.markdown(f"**Details2:** {daily_quote['Details2']}")
-    st.subheader("📜 Today's Quote")
-    st.write(f"_{daily_quote['Quote']}_")
+# Check if we already have a random quote in session state
+if 'quote_random' not in st.session_state:
+    st.session_state['quote_random'] = get_daily_random_row(quotes_df, date.today())
 
-    if st.button("Display Another Quote"):
-        st.session_state['quote_random'] = quotes_df.sample(n=1).iloc[0]
+q = st.session_state['quote_random']
 
-    if 'quote_random' in st.session_state:
-        st.markdown("---")
-        st.subheader("🔁 Another Random Quote")
-        q = st.session_state['quote_random']
-        st.markdown(f"**Date:** {q['Date']}")
-        st.markdown(f"**Source:** {q['Source']}")
-        st.markdown(f"**Details1:** {q['Details1']}")
-        st.markdown(f"**Details2:** {q['Details2']}")
-        st.write(f"_{q['Quote']}_")
+# Display the current quote
+st.markdown(f"**Date:** {q['Date']}")
+st.markdown(f"**Source:** {q['Source']}")
+st.markdown(f"**Details1:** {q['Details1']}")
+st.markdown(f"**Details2:** {q['Details2']}")
+st.write(f"_{q['Quote']}_")
+
+# Button to get a new random quote
+if st.button("Display Another Quote"):
+    st.session_state['quote_random'] = quotes_df.sample(n=1).iloc[0]
+    st.experimental_rerun()
+
 
 # --- Mantras Section ---
 st.header("🧘‍♂️ Today's Mantra")
 
 mantras_df = data[data["Details1"].str.lower() == "mantras"]
-daily_mantra = get_daily_random_row(mantras_df, date.today())
 
-if daily_mantra is not None:
-    st.markdown(f"**Date:** {daily_mantra['Date']}")
-    st.markdown(f"**Source:** {daily_mantra['Source']}")
-    st.markdown(f"**Details1:** {daily_mantra['Details1']}")
-    st.markdown(f"**Details2:** {daily_mantra['Details2']}")
-    st.subheader("📿 Today's Mantra")
-    st.write(f"_{daily_mantra['Quote']}_")
+# Check if we already have a random mantra in session state
+if 'mantra_random' not in st.session_state:
+    st.session_state['mantra_random'] = get_daily_random_row(mantras_df, date.today())
 
-    if st.button("Display Another Mantra"):
-        st.session_state['mantra_random'] = mantras_df.sample(n=1).iloc[0]
+m = st.session_state['mantra_random']
 
-    if 'mantra_random' in st.session_state:
-        st.markdown("---")
-        st.subheader("🔁 Another Random Mantra")
-        m = st.session_state['mantra_random']
-        st.markdown(f"**Date:** {m['Date']}")
-        st.markdown(f"**Source:** {m['Source']}")
-        st.markdown(f"**Details1:** {m['Details1']}")
-        st.markdown(f"**Details2:** {m['Details2']}")
-        st.write(f"_{m['Quote']}_")
+# Display the current mantra
+st.markdown(f"**Date:** {m['Date']}")
+st.markdown(f"**Source:** {m['Source']}")
+st.markdown(f"**Details1:** {m['Details1']}")
+st.markdown(f"**Details2:** {m['Details2']}")
+st.write(f"_{m['Quote']}_")
+
+# Button to get a new random mantra
+if st.button("Display Another Mantra"):
+    st.session_state['mantra_random'] = mantras_df.sample(n=1).iloc[0]
+    st.experimental_rerun()
+
 

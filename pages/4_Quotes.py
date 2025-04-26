@@ -20,7 +20,7 @@ remaining_seconds = seconds % 60
 
 # Display the message
 st.markdown(f"### ⏳ {days} days, {hours} hours, {minutes} minutes, {remaining_seconds} seconds have passed since you were born.")
-st.markdown("### 🌟 Make the most out of your day! Nothing is as serious as it seems! 😊")
+st.markdown("### 🌟 Relax and  make the most out of your day! Nothing is as serious as it seems! All will end soon. 😊")
 st.markdown("---")
 
 
@@ -59,7 +59,7 @@ q = st.session_state['quote_random']
 st.markdown(f"**Date:** {q['Date']}")
 st.markdown(f"**Source Type:** {q['Source Type']}")
 st.markdown(f"**Source:** {q['Source']}")
-st.markdown(f"**Details:** {q['Details1']}, {q['Details2']}")
+st.markdown(f"**Details:** {q['Details1']}{', ' + q['Details2'] if q['Details2'] else ''}")
 st.write(f"_{q['Quote']}_")
 
 # Button to get a new random quote
@@ -83,7 +83,7 @@ m = st.session_state['mantra_random']
 st.markdown(f"**Date:** {m['Date']}")
 st.markdown(f"**Source Type:** {m['Source Type']}")
 st.markdown(f"**Source:** {m['Source']}")
-st.markdown(f"**Details:** {m['Details1']}, {m['Details2']}")
+st.markdown(f"**Details:** {m['Details1']}{', ' + m['Details2'] if m['Details2'] else ''}")
 st.write(f"_{m['Quote']}_")
 
 # Button to get a new random mantra

@@ -20,7 +20,7 @@ food_log['Date'] = pd.to_datetime(food_log['Date'], dayfirst=True)
 daily_macros = food_log.groupby('Date').agg({
     'Protein': 'sum',
     'Carbs': 'sum',
-    'Fat': 'sum'
+    'Fats': 'sum'
 }).reset_index()
 
 # --- Sidebar Settings ---
@@ -29,7 +29,7 @@ st.sidebar.header("⚙️ Dashboard Settings")
 # Macro selection
 macro = st.sidebar.selectbox(
     "Select Macro to Visualize:",
-    ['Protein', 'Carbs', 'Fat'],
+    ['Protein', 'Carbs', 'Fats'],
     index=0
 )
 

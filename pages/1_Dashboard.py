@@ -142,4 +142,4 @@ col2.metric("Average Daily Intake", f"{avg_macro:.1f} g")
 
 # Optional: Show raw data
 with st.expander("See Raw Macro Data for Selected Range"):
-    st.dataframe(filtered_macros[['Date', 'Protein', 'Carbs', 'Fat']])
+    st.dataframe(filtered_macros[['Date', 'Protein', 'Carbs', 'Fats']])

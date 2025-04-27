@@ -1,87 +1,145 @@
-
-
-
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
+import numpy as np
+import calendar
+from datetime import datetime
+import plotly.graph_objects as go
 
-st.title("📊 Dashboard")
+# --- Load Food Log ---
+if 'log_data_full' not in st.session_state:
+    st.error("No Food Log data found. Please log some food first.")
+    st.stop()
 
-# Get the full food log
-log_data = pd.DataFrame(st.session_state['full_log_data'])
+food_log = st.session_state.log_data_full.copy()
 
-# Convert date column
-log_data['Date'] = pd.to_datetime(log_data['Date'], format='%d/%m/%Y')
+# --- Preprocess ---
+# Ensure Date column is datetime
+food_log['Date'] = pd.to_datetime(food_log['Date'])
 
-# Sidebar controls
-st.sidebar.header("📅 Time Range & Metrics")
+# Aggregate daily totals
+daily_macros = food_log.groupby('Date').agg({
+    'Protein': 'sum',
+    'Carbs': 'sum',
+    'Fat': 'sum'
+}).reset_index()
 
-# Time range selection
-range_option = st.sidebar.selectbox("Select Time Range", ["Week", "Month", "Quarter", "Semester", "Year", "All"])
+# --- Sidebar Settings ---
+st.sidebar.header("⚙️ Dashboard Settings")
 
-# Metric selection
-metric_options = ["Protein", "Carbs", "Fats", "Calories"]
-selected_metrics = st.sidebar.multiselect("Select Metrics", metric_options, default=metric_options)
+# Macro selection
+macro = st.sidebar.selectbox(
+    "Select Macro to Visualize:",
+    ['Protein', 'Carbs', 'Fat'],
+    index=0
+)
 
-# Determine date cutoff and resample frequency
-today = datetime.today()
+# Macro goal thresholds (editable)
+st.sidebar.subheader("Threshold Settings (adjust if needed)")
+if macro == "Protein":
+    low_threshold = st.sidebar.number_input("Low (g)", value=50)
+    medium_threshold = st.sidebar.number_input("Medium (g)", value=100)
+    high_threshold = st.sidebar.number_input("High (g)", value=150)
+elif macro == "Carbs":
+    low_threshold = st.sidebar.number_input("Low (g)", value=150)
+    medium_threshold = st.sidebar.number_input("Medium (g)", value=200)
+    high_threshold = st.sidebar.number_input("High (g)", value=250)
+else:  # Fat
+    low_threshold = st.sidebar.number_input("Low (g)", value=30)
+    medium_threshold = st.sidebar.number_input("Medium (g)", value=60)
+    high_threshold = st.sidebar.number_input("High (g)", value=90)
 
-if range_option == "Week":
-    cutoff = today - timedelta(days=7)
-    resample_rule = 'D'
-    label_format = '%a'
-elif range_option == "Month":
-    cutoff = today - timedelta(days=30)
-    resample_rule = 'D'
-    label_format = '%d-%b'
-elif range_option == "Quarter":
-    cutoff = today - timedelta(weeks=13)
-    resample_rule = 'W'
-    label_format = '%d-%b'
-elif range_option == "Semester":
-    cutoff = today - timedelta(weeks=26)
-    resample_rule = 'M'
-    label_format = '%b'
-elif range_option == "Year":
-    cutoff = today - timedelta(weeks=52)
-    resample_rule = 'M'
-    label_format = '%b'
-else:
-    cutoff = None
-    resample_rule = 'M'
-    label_format = '%b %Y'
+# Date Range Selection
+st.sidebar.subheader("Select Date Range")
+min_date = daily_macros['Date'].min()
+max_date = daily_macros['Date'].max()
 
-# Filter data
-if cutoff:
-    filtered_data = log_data[log_data['Date'] >= cutoff]
-else:
-    filtered_data = log_data.copy()
+start_date = st.sidebar.date_input("Start Date", min_value=min_date, max_value=max_date, value=min_date)
+end_date = st.sidebar.date_input("End Date", min_value=min_date, max_value=max_date, value=max_date)
 
-# Set index to Date and group
-filtered_data.set_index('Date', inplace=True)
+if start_date > end_date:
+    st.sidebar.error("Start date must be before end date!")
+    st.stop()
 
-# Resample for aggregation (average)
-resampled_avg = filtered_data[selected_metrics].resample(resample_rule).mean()
-resampled_sum = filtered_data[selected_metrics].resample('D').sum()
+# Filter for selected date range
+mask = (daily_macros['Date'] >= pd.to_datetime(start_date)) & (daily_macros['Date'] <= pd.to_datetime(end_date))
+filtered_macros = daily_macros.loc[mask]
 
-# Plotting
-st.subheader("📊 Macro Trends Over Time")
-fig, ax = plt.subplots(figsize=(10, 5))
+# --- Main Page ---
+st.title("📅 Macro Intake Calendar Overview")
 
-# Actual values (grey lines)
-if range_option in ["Week", "Month"]:
-    for metric in selected_metrics:
-        ax.plot(resampled_sum.index, resampled_sum[metric], label=f"{metric} (actual)", linestyle='--', alpha=0.4)
+st.markdown(f"### Macro: **{macro}** from {start_date} to {end_date}")
 
-# Smoothed/averaged values
-for metric in selected_metrics:
-    ax.plot(resampled_avg.index, resampled_avg[metric], label=f"{metric} (avg)")
+# --- Create Calendar Heatmap ---
+# Create pivot table: rows = weeks, columns = weekdays
+def create_calendar_data(df, macro_col):
+    df['Day'] = df['Date'].dt.day
+    df['Week'] = df['Date'].dt.isocalendar().week
+    df['Weekday'] = df['Date'].dt.weekday  # Monday=0
 
-ax.set_xlabel("Date")
-ax.set_ylabel("Grams / Calories")
-ax.set_title(f"{', '.join(selected_metrics)} over {range_option.lower()} timeframe")
-ax.legend()
-plt.xticks(rotation=45)
-st.pyplot(fig)
+    pivot = pd.pivot_table(df, index='Week', columns='Weekday', values=macro_col, aggfunc='sum')
+    pivot = pivot.fillna(0)
+    return pivot
 
+calendar_data = create_calendar_data(filtered_macros, macro)
+
+# --- Color Mapping Function ---
+def get_color(val):
+    if val == 0:
+        return "lightgrey"  # No entry
+    elif val < low_threshold:
+        return "#FF4B4B"  # Red
+    elif val < medium_threshold:
+        return "#FFA500"  # Orange
+    elif val < high_threshold:
+        return "#FFFF00"  # Yellow
+    else:
+        return "#4CAF50"  # Green
+
+# --- Plot Heatmap ---
+fig = go.Figure()
+
+for week_idx, week in enumerate(calendar_data.index):
+    for day_idx in range(7):
+        value = calendar_data.loc[week, day_idx] if day_idx in calendar_data.columns else 0
+        color = get_color(value)
+        day_label = "" if value == 0 else str(int(value))
+
+        fig.add_trace(go.Scatter(
+            x=[day_idx],
+            y=[-week_idx],
+            text=[day_label],
+            mode='markers+text',
+            marker=dict(size=60, color=color, line=dict(width=1, color="black")),
+            textfont=dict(color="black", size=14),
+            hoverinfo="skip",
+        ))
+
+fig.update_layout(
+    width=700,
+    height=400,
+    xaxis=dict(
+        tickmode='array',
+        tickvals=list(range(7)),
+        ticktext=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        side='top'
+    ),
+    yaxis=dict(showticklabels=False),
+    margin=dict(l=20, r=20, t=50, b=20),
+    plot_bgcolor='white'
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+# --- Some Stats ---
+st.markdown("### 📊 Summary Stats")
+
+total_macro = filtered_macros[macro].sum()
+avg_macro = filtered_macros[macro].mean()
+
+col1, col2 = st.columns(2)
+col1.metric("Total Intake", f"{total_macro:.1f} g")
+col2.metric("Average Daily Intake", f"{avg_macro:.1f} g")
+
+# Optional: Show raw data
+with st.expander("See Raw Macro Data for Selected Range"):
+    st.dataframe(filtered_macros[['Date', 'Protein', 'Carbs', 'Fat']])

@@ -14,7 +14,7 @@ food_log = st.session_state.log_data_full.copy()
 
 # --- Preprocess ---
 # Ensure Date column is datetime
-food_log['Date'] = pd.to_datetime(food_log['Date'])
+food_log['Date'] = pd.to_datetime(food_log['Date'], dayfirst=True)
 
 # Aggregate daily totals
 daily_macros = food_log.groupby('Date').agg({

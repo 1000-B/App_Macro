@@ -5,6 +5,7 @@ from datetime import date
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+import os
 
 # Calculate the difference
 birth_datetime = datetime(1981, 3, 8, 9, 20, 0)  # 8 March 1981, 09:20:00
@@ -90,5 +91,32 @@ st.write(f"_{m['Quote']}_")
 if st.button("Display Another Mantra"):
     st.session_state['mantra_random'] = mantras_df.sample(n=1).iloc[0]
     st.rerun()
+
+
+
+# --- Daily Random Audio Clip Section ---
+st.subheader("🎧 Daily Audio")
+
+# Path to audio files in the deployed app
+audio_dir = "audio_clips"
+
+# List all audio files
+audio_files = [f for f in os.listdir(audio_dir) if f.endswith(('.mp3', '.wav'))]
+
+if audio_files:
+    # Deterministically pick one per day
+    seed = date.today().toordinal()
+    random.seed(seed)
+    audio_today = random.choice(audio_files)
+
+    # Streamlit audio player
+    audio_path = os.path.join(audio_dir, audio_today)
+    with open(audio_path, "rb") as audio_file:
+        audio_bytes = audio_file.read()
+        st.audio(audio_bytes, format="audio/mp3" if audio_today.endswith(".mp3") else "audio/wav")
+        st.caption(f"Now playing: {audio_today}")
+else:
+    st.info("No audio files found.")
+
 
 

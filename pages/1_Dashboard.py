@@ -30,10 +30,10 @@ macro = st.sidebar.selectbox("Select Macro:", ['Protein', 'Carbs', 'Fats', 'Calo
 
 # Macro-based recommended default thresholds
 default_thresholds = {
-    'Protein': (120, 200),
+    'Protein': (100, 150),
     'Carbs': (250, 400),
     'Fats': (50, 90),
-    'Calories': (2500, 3500)
+    'Calories': (2000, 3000)
 }
 
 macro_min, macro_max = default_thresholds.get(macro, (0, 100))

@@ -95,7 +95,7 @@ if st.button("Display Another Mantra"):
 
 
 # --- Daily Random Audio Clip Section ---
-st.subheader("🎧 Daily Audio")
+st.subheader("🎧 Today's Audio")
 
 # Path to audio files in the deployed app
 audio_dir = "audio_clips"

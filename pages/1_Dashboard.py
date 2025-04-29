@@ -28,9 +28,19 @@ st.sidebar.header("📊 Dashboard Settings")
 
 macro = st.sidebar.selectbox("Select Macro:", ['Protein', 'Carbs', 'Fats', 'Calories'])
 
-st.sidebar.subheader("Threshold Range (for optimal intake)")
-min_thresh = st.sidebar.number_input("Min Threshold", value=80 if macro == "Protein" else 150)
-max_thresh = st.sidebar.number_input("Max Threshold", value=140 if macro == "Protein" else 250)
+# Macro-based recommended default thresholds
+default_thresholds = {
+    'Protein': (120, 200),
+    'Carbs': (250, 400),
+    'Fats': (50, 90),
+    'Calories': (2500, 3500)
+}
+
+macro_min, macro_max = default_thresholds.get(macro, (0, 100))
+
+min_thresh = st.sidebar.number_input("Min Threshold", value=macro_min)
+max_thresh = st.sidebar.number_input("Max Threshold", value=macro_max)
+
 
 # Time Range Selection
 st.sidebar.subheader("Time Range")
@@ -87,7 +97,12 @@ fig.update_layout(
     xaxis_title="Date",
     yaxis_title=f"{macro} (g)" if macro != "Calories" else "Calories",
     title=f"{macro} Intake Over Time",
+    yaxis=dict(range=[
+        min(0, filtered_macros[macro].min() * 0.9),
+        max(filtered_macros[macro].max() * 1.1, max_thresh * 1.05)
+    ])
 )
+
 
 st.plotly_chart(fig, use_container_width=True)
 

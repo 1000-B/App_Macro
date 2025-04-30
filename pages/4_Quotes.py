@@ -21,7 +21,7 @@ remaining_seconds = seconds % 60
 
 # Display the message
 st.markdown(f"### ⏳ {days} days, {hours} hours, {minutes} minutes, {remaining_seconds} seconds have passed since you were born.")
-st.markdown("### 🌟 Relax and  make the most out of your day! Nothing is as serious as it seems! All will end soon. 😊")
+st.markdown("### 🌟 Relax and  make the most out of your time! Nothing is as serious as it seems! 😊")
 st.markdown("---")
 
 

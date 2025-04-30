@@ -26,9 +26,14 @@ daily_macros = food_log.groupby('Date')[['Protein', 'Carbs', 'Fats', 'Calories']
 # --- Sidebar Settings ---
 st.sidebar.header("📊 Dashboard Settings")
 
-macro = st.sidebar.selectbox("Select Macro:", ['Protein', 'Carbs', 'Fats', 'Calories'])
+# Time Range first
+st.sidebar.subheader("Time Range")
+time_range = st.sidebar.selectbox("Select Range:", ["Week", "Month", "Quarter", "Year", "All"])
 
-# Macro-based recommended default thresholds
+# Then Macro Selector
+macro = st.sidebar.selectbox("Select Macro:", ['Protein', 'Carbs', 'Fats', 'Calories', 'All Macros'])
+
+# Default threshold values
 default_thresholds = {
     'Protein': (100, 150),
     'Carbs': (250, 400),
@@ -36,16 +41,13 @@ default_thresholds = {
     'Calories': (2000, 3000)
 }
 
-macro_min, macro_max = default_thresholds.get(macro, (0, 100))
+# Thresholds only applicable if not All Macros
+if macro not in ['All Macros', 'Calories']:
+    macro_min, macro_max = default_thresholds.get(macro, (0, 100))
+    min_thresh = st.sidebar.number_input("Min Threshold", value=macro_min)
+    max_thresh = st.sidebar.number_input("Max Threshold", value=macro_max)
 
-min_thresh = st.sidebar.number_input("Min Threshold", value=macro_min)
-max_thresh = st.sidebar.number_input("Max Threshold", value=macro_max)
-
-
-# Time Range Selection
-st.sidebar.subheader("Time Range")
-time_range = st.sidebar.selectbox("Select Range:", ["Week", "Month", "Quarter", "Year", "All"])
-
+# --- Time Range Filtering ---
 today = datetime.today()
 if time_range == "Week":
     start_date = today - timedelta(days=6)
@@ -67,55 +69,76 @@ filtered_macros = daily_macros[mask]
 st.title("📈 Macro Intake Trends")
 st.markdown(f"### {macro} Trends ({time_range})")
 
-# --- Plot Line Chart with Thresholds ---
+# --- Plotting ---
 fig = go.Figure()
 
-fig.add_trace(go.Scatter(
-    x=filtered_macros['Date'],
-    y=filtered_macros[macro],
-    mode='lines+markers',
-    name=macro,
-    line=dict(color='blue')
-))
+if macro == "All Macros":
+    colors = {'Protein': 'blue', 'Carbs': 'orange', 'Fats': 'green'}
+    for m in ['Protein', 'Carbs', 'Fats']:
+        fig.add_trace(go.Scatter(
+            x=filtered_macros['Date'],
+            y=filtered_macros[m],
+            mode='lines+markers',
+            name=m,
+            line=dict(color=colors[m])
+        ))
+else:
+    color_map = {'Protein': 'blue', 'Carbs': 'orange', 'Fats': 'green', 'Calories': 'red'}
+    fig.add_trace(go.Scatter(
+        x=filtered_macros['Date'],
+        y=filtered_macros[macro],
+        mode='lines+markers',
+        name=macro,
+        line=dict(color=color_map.get(macro, 'blue'))
+    ))
 
-# Add threshold band
-fig.add_shape(
-    type="rect",
-    x0=filtered_macros['Date'].min(),
-    x1=filtered_macros['Date'].max(),
-    y0=min_thresh,
-    y1=max_thresh,
-    fillcolor="green",
-    opacity=0.2,
-    layer="below",
-    line_width=0,
-)
+    # Threshold Band (only if not All Macros or Calories)
+    if macro != "Calories":
+        fig.add_shape(
+            type="rect",
+            x0=filtered_macros['Date'].min(),
+            x1=filtered_macros['Date'].max(),
+            y0=min_thresh,
+            y1=max_thresh,
+            fillcolor="green",
+            opacity=0.2,
+            layer="below",
+            line_width=0,
+        )
 
 fig.update_layout(
     height=450,
     margin=dict(l=30, r=30, t=50, b=40),
     xaxis_title="Date",
-    yaxis_title=f"{macro} (g)" if macro != "Calories" else "Calories",
-    title=f"{macro} Intake Over Time",
-    yaxis=dict(range=[
-        min(0, filtered_macros[macro].min() * 0.9),
-        max(filtered_macros[macro].max() * 1.1, max_thresh * 1.05)
-    ])
+    yaxis_title="Grams" if macro != "Calories" else "Calories",
+    title=f"{macro} Intake Over Time" if macro != "All Macros" else "Macro Intake Over Time",
 )
-
 
 st.plotly_chart(fig, use_container_width=True)
 
 # --- Summary Stats ---
 st.subheader("📌 Summary Stats")
 
-total_macro = filtered_macros[macro].sum()
-avg_macro = filtered_macros[macro].mean()
-days_count = filtered_macros['Date'].nunique()
+if macro == "All Macros":
+    totals = {m: filtered_macros[m].sum() for m in ['Protein', 'Carbs', 'Fats']}
+    avg = {m: filtered_macros[m].mean() for m in ['Protein', 'Carbs', 'Fats']}
+    top_macro = max(totals, key=totals.get)
 
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Intake", f"{total_macro:.1f}")
-col2.metric("Average Daily Intake", f"{avg_macro:.1f}")
-col3.metric("Days Tracked", days_count)
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Top Macro", f"{top_macro} ({totals[top_macro]:.1f}g)")
+    col2.metric("Days Tracked", filtered_macros['Date'].nunique())
+    col3.metric("Average Daily Total", f"{sum(avg.values()):.1f}g")
 
+    st.markdown("#### 🔍 Breakdown")
+    for m in ['Protein', 'Carbs', 'Fats']:
+        st.markdown(f"- **{m}**: Total = {totals[m]:.1f}g | Daily Avg = {avg[m]:.1f}g")
 
+else:
+    total_macro = filtered_macros[macro].sum()
+    avg_macro = filtered_macros[macro].mean()
+    days_count = filtered_macros['Date'].nunique()
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Intake", f"{total_macro:.1f}")
+    col2.metric("Average Daily Intake", f"{avg_macro:.1f}")
+    col3.metric("Days Tracked", days_count)

@@ -117,3 +117,5 @@ col1, col2, col3 = st.columns(3)
 col1.metric("Total Intake", f"{total_macro:.1f}")
 col2.metric("Average Daily Intake", f"{avg_macro:.1f}")
 col3.metric("Days Tracked", days_count)
+
+

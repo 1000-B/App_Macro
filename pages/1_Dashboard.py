@@ -125,15 +125,16 @@ st.subheader("📌 Summary Stats")
 if macro == "All Macros":
     totals = {m: filtered_macros[m].sum() for m in ['Protein', 'Carbs', 'Fats']}
     avg = {m: filtered_macros[m].mean() for m in ['Protein', 'Carbs', 'Fats']}
-    top_macro = max(totals, key=totals.get)
+    days_tracked = filtered_macros['Date'].nunique()
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Top Macro", f"{top_macro} ({totals[top_macro]:.1f}g)")
-    col2.metric("Days Tracked", filtered_macros['Date'].nunique())
-    col3.metric("Average Daily Total", f"{sum(avg.values()):.1f}g")
+    col1.metric("Days Tracked", days_tracked)
+    col2.metric("Total Intake", f"{sum(totals.values()):.1f}g")
+    col3.metric("Avg Daily Total", f"{sum(avg.values()):.1f}g")
 
+    st.markdown("---")
     for m in ['Protein', 'Carbs', 'Fats']:
-        st.markdown(f"- **{m}**: Total = {totals[m]:.1f}g | Daily Avg = {avg[m]:.1f}g")
+        st.markdown(f"**{m}**  \n• Total: {totals[m]:.1f}g  \n• Daily Avg: {avg[m]:.1f}g")
 
 else:
     total_macro = filtered_macros[macro].sum()
@@ -159,5 +160,6 @@ else:
 
         for idx, row in top_foods.iterrows():
             st.markdown(f"{idx+1}. **{row['Food']}** — {row[macro]:.1f}")
+
 
 

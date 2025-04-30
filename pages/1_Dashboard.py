@@ -120,46 +120,23 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # --- Summary Stats ---
-st.subheader("📌 Summary Stats")
+days_tracked = filtered_macros['Date'].nunique()
+st.subheader(f"📌 Summary Stats — {days_tracked} Days Tracked")
 
 if macro == "All Macros":
     totals = {m: filtered_macros[m].sum() for m in ['Protein', 'Carbs', 'Fats']}
     avg = {m: filtered_macros[m].mean() for m in ['Protein', 'Carbs', 'Fats']}
-    days_tracked = filtered_macros['Date'].nunique()
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Days Tracked", days_tracked)
-    col2.metric("Total Intake", f"{sum(totals.values()):.1f}g")
-    col3.metric("Avg Daily Total", f"{sum(avg.values()):.1f}g")
+    col1.markdown("**Macro**")
+    col2.markdown("**Total Intake (g)**")
+    col3.markdown("**Avg Daily Intake (g)**")
 
-    st.markdown("---")
     for m in ['Protein', 'Carbs', 'Fats']:
-        st.markdown(f"**{m}**  \n• Total: {totals[m]:.1f}g  \n• Daily Avg: {avg[m]:.1f}g")
+        col1.markdown(m)
+        col2.markdown(f"{totals[m]:.1f}")
+        col3.markdown(f"{avg[m]:.1f}")
 
-else:
-    total_macro = filtered_macros[macro].sum()
-    avg_macro = filtered_macros[macro].mean()
-    days_count = filtered_macros['Date'].nunique()
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Intake", f"{total_macro:.1f}")
-    col2.metric("Average Daily Intake", f"{avg_macro:.1f}")
-    col3.metric("Days Tracked", days_count)
-
-    # --- Top 3 Foods for Selected Macro ---
-    if macro in ['Protein', 'Carbs', 'Fats', 'Calories']:
-        st.subheader(f"🍽️ Top 3 {macro} Sources")
-
-        top_foods = (
-            filtered_log.groupby('Food')[macro]
-            .sum()
-            .sort_values(ascending=False)
-            .head(3)
-            .reset_index()
-        )
-
-        for idx, row in top_foods.iterrows():
-            st.markdown(f"{idx+1}. **{row['Food']}** — {row[macro]:.1f}")
 
 
 

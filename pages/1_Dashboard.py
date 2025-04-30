@@ -132,7 +132,6 @@ if macro == "All Macros":
     col2.metric("Days Tracked", filtered_macros['Date'].nunique())
     col3.metric("Average Daily Total", f"{sum(avg.values()):.1f}g")
 
-    st.markdown("#### 🔍 Breakdown")
     for m in ['Protein', 'Carbs', 'Fats']:
         st.markdown(f"- **{m}**: Total = {totals[m]:.1f}g | Daily Avg = {avg[m]:.1f}g")
 
@@ -160,4 +159,5 @@ else:
 
         for idx, row in top_foods.iterrows():
             st.markdown(f"{idx+1}. **{row['Food']}** — {row[macro]:.1f}")
+
 

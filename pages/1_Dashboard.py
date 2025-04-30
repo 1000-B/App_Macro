@@ -41,7 +41,7 @@ default_thresholds = {
     'Calories': (2000, 3000)
 }
 
-# Thresholds only applicable if not All Macros
+# Thresholds only applicable if not All Macros or Calories
 if macro not in ['All Macros', 'Calories']:
     macro_min, macro_max = default_thresholds.get(macro, (0, 100))
     min_thresh = st.sidebar.number_input("Min Threshold", value=macro_min)
@@ -62,8 +62,11 @@ else:  # All
     start_date = daily_macros['Date'].min()
 
 end_date = today
-mask = (daily_macros['Date'] >= start_date) & (daily_macros['Date'] <= end_date)
-filtered_macros = daily_macros[mask]
+mask = (food_log['Date'] >= start_date) & (food_log['Date'] <= end_date)
+filtered_log = food_log[mask]
+
+# Daily summary for plotting
+filtered_macros = filtered_log.groupby('Date')[['Protein', 'Carbs', 'Fats', 'Calories']].sum().reset_index()
 
 # --- Main Display ---
 st.title("📈 Macro Intake Trends")
@@ -92,7 +95,7 @@ else:
         line=dict(color=color_map.get(macro, 'blue'))
     ))
 
-    # Threshold Band (only if not All Macros or Calories)
+    # Threshold Band (only if not Calories)
     if macro != "Calories":
         fig.add_shape(
             type="rect",
@@ -142,3 +145,19 @@ else:
     col1.metric("Total Intake", f"{total_macro:.1f}")
     col2.metric("Average Daily Intake", f"{avg_macro:.1f}")
     col3.metric("Days Tracked", days_count)
+
+    # --- Top 3 Foods for Selected Macro ---
+    if macro in ['Protein', 'Carbs', 'Fats', 'Calories']:
+        st.subheader(f"🍽️ Top 3 {macro} Sources")
+
+        top_foods = (
+            filtered_log.groupby('Food')[macro]
+            .sum()
+            .sort_values(ascending=False)
+            .head(3)
+            .reset_index()
+        )
+
+        for idx, row in top_foods.iterrows():
+            st.markdown(f"{idx+1}. **{row['Food']}** — {row[macro]:.1f}")
+

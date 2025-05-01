@@ -104,19 +104,27 @@ audio_dir = "audio_clips"
 audio_files = [f for f in os.listdir(audio_dir) if f.endswith(('.mp3', '.wav'))]
 
 if audio_files:
-    # Deterministically pick one per day
-    seed = date.today().toordinal()
-    random.seed(seed)
-    audio_today = random.choice(audio_files)
+    if 'audio_random' not in st.session_state:
+        # Deterministically pick one per day by default
+        random.seed(date.today().toordinal())
+        st.session_state['audio_random'] = random.choice(audio_files)
 
-    # Streamlit audio player
+    # Display audio player
+    audio_today = st.session_state['audio_random']
     audio_path = os.path.join(audio_dir, audio_today)
+    
     with open(audio_path, "rb") as audio_file:
         audio_bytes = audio_file.read()
         st.audio(audio_bytes, format="audio/mp3" if audio_today.endswith(".mp3") else "audio/wav")
         st.caption(f"Now playing: {audio_today}")
+
+    # Button to get a new random audio file
+    if st.button("Play Another Audio Clip"):
+        st.session_state['audio_random'] = random.choice(audio_files)
+        st.rerun()
 else:
     st.info("No audio files found.")
+
 
 
 

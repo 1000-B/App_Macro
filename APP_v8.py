@@ -83,7 +83,7 @@ with st.expander("🔧 Advanced Options"):
         cols = st.columns(buttons_per_row)
         for j, food_name in enumerate(frequent_food_names[i:i+buttons_per_row]):
             with cols[j]:
-                if st.button(food_name):
+                if st.button(food_name, key=f"quick_add_{food_name}"):
                     if food_name in food_data:
                         unit = food_data[food_name]["Unit"]
                         default_qty = 100 if is_weight_based(unit) else 1
@@ -238,7 +238,7 @@ if selection != "Miscellaneous Entry...":
         fats = food_data[food]["Fats"] * factor
         calories = food_data[food]["Calories"] * factor
 
-        if st.button("Add to Log"):
+        if st.button("Add to Log", key="add_to_log_main"):
             new_entry = {
                 "Date": log_date_str,
                 "Food": food,
@@ -329,7 +329,7 @@ if food in food_data:
     fats = food_data[food]["Fats"] * factor
     calories = food_data[food]["Calories"] * factor
 
-    if st.button("Add to Log"):
+    if st.button("Add to Log", key="add_to_log_final"):
         new_entry = {
             "Date": log_date_str,
             "Food": food,

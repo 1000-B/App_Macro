@@ -218,101 +218,104 @@ if selection == "Miscellaneous Entry" and food:
 
 
 # Step 4: Show confirmation of selection
+# Step 4: Show confirmation of selection
 if food:
     st.info(f":white_check_mark: Selected Food: {food}")
 
-# Get the unit of the selected food (if it exists)
-unit_display = food_data[food]["Unit"] if food in food_data else ""
+# 👇 Only show add new food UI if NOT 'Miscellaneous Entry'
+if selection != "Miscellaneous Entry":
+    # Get the unit of the selected food (if it exists)
+    unit_display = food_data[food]["Unit"] if food in food_data else ""
 
-# Display quantity input along with the unit
-quantity = st.number_input(f"Quantity ({unit_display})", min_value=1, step=1)
+    # Display quantity input along with the unit
+    quantity = st.number_input(f"Quantity ({unit_display})", min_value=1, step=1)
 
-def is_weight_based(unit):
-    return unit.lower() in ["gram", "grams", "g", "ml"]
+    if food in food_data:
+        unit = food_data[food]["Unit"]  # Get the unit for this food item
+        factor = quantity / 100 if is_weight_based(unit) else quantity
+        protein = food_data[food]["Protein"] * factor
+        carbs = food_data[food]["Carbs"] * factor
+        fats = food_data[food]["Fats"] * factor
+        calories = food_data[food]["Calories"] * factor
 
-# Step 4: Handle food selection or new entry
-if food in food_data:
-    unit = food_data[food]["Unit"]  # Get the unit for this food item
-    # Existing food - Compute macros
-    factor = quantity / 100 if is_weight_based(unit) else quantity
-    protein = food_data[food]["Protein"] * factor
-    carbs = food_data[food]["Carbs"] * factor
-    fats = food_data[food]["Fats"] * factor
-    calories = food_data[food]["Calories"]*factor
-else:
-    # New food - Ask for macros
-    st.warning("Food not found. Enter macros below to save it.")
-    
-    # Predefined unit options
-    unit_options = sorted({row["Unit"] for row in food_data.values() if row.get("Unit")})
-    
-    # Dropdown for unit selection
-    unit = st.selectbox("Select Unit", options=unit_options)
-    
-    # Allow manual entry if needed
-    custom_unit = st.text_input("Or enter a custom unit")
-    
-    # If the user enters a custom unit, override the selection
-    if custom_unit:
-        unit = custom_unit
-    
-    # Macro inputs
-    protein = st.number_input("Protein (g)", min_value=0.0, format="%.1f")
-    carbs = st.number_input("Carbs (g)", min_value=0.0, format="%.1f")
-    fats = st.number_input("Fats (g)", min_value=0.0, format="%.1f")
-    calories = st.number_input("Calories", min_value=0.0, format="%.1f")
-
-    
-
-    # Step 5: Save new food
-    if st.button("Save New Food"):
-        # Ensure the food name is not empty
-        if not food:
-            st.error("Food name cannot be empty!")
-        elif food in food_data:
-            st.warning(f"{food} already exists in the database.")
-        else:
-            # Append new food entry
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if st.button("Add to Log"):
             new_entry = {
-                "Food": food,
-                "Unit": unit,
-                "Protein": protein,
-                "Carbs": carbs,
-                "Fats": fats,
-                "Calories": calories,
-                "Timestamp": timestamp  # Add timestamp
-            }
-            
-            # Convert food_data to DataFrame before saving
-            df_new_food = pd.DataFrame([new_entry])  # Convert single entry to DataFrame
-            
-            # Save new food to Google Sheets
-            food_sheet.append_rows(df_new_food.values.tolist())
-            
-            # Update local food_data dictionary
-            food_data[food] = {"Unit": unit, "Protein": protein, "Carbs": carbs, "Fats": fats, "Calories": calories}
-            
-            st.success(f"{food} has been added to the database!")
-
-# ---- Automatically log the newly added food ----
-            unit = food_data[food]["Unit"]  # Get the unit for this food item
-            factor = quantity / 100 if is_weight_based(unit) else quantity
-            logged_entry = {
                 "Date": log_date_str,
                 "Food": food,
                 "Quantity": quantity,
-                "Unit": unit,
-                "Protein": protein * factor,
-                "Carbs": carbs * factor,
-                "Fats": fats * factor,
-                "Calories": calories * factor
+                "Unit": food_data[food]["Unit"],
+                "Protein": protein,
+                "Carbs": carbs,
+                "Fats": fats,
+                "Calories": calories
             }
-    
-            # Append the logged entry to Google Sheets
-            log_sheet.append_rows([list(logged_entry.values())])
-            
-            st.success(f"{food} has also been logged with {quantity} {unit}!")
+
+            existing_log = log_sheet.get_all_records()
+            log_data = pd.DataFrame(existing_log)
+            log_data = pd.concat([log_data, pd.DataFrame([new_entry])], ignore_index=True)
+
+            log_sheet.clear()
+            log_sheet.update([log_data.columns.values.tolist()] + log_data.values.tolist())
+
+            st.success("Entry Added!")
+
+    else:
+        # New food - Ask for macros
+        st.warning("Food not found. Enter macros below to save it.")
+
+        unit_options = sorted({row["Unit"] for row in food_data.values() if row.get("Unit")})
+        unit = st.selectbox("Select Unit", options=unit_options)
+        custom_unit = st.text_input("Or enter a custom unit")
+        if custom_unit:
+            unit = custom_unit
+
+        protein = st.number_input("Protein (g)", min_value=0.0, format="%.1f")
+        carbs = st.number_input("Carbs (g)", min_value=0.0, format="%.1f")
+        fats = st.number_input("Fats (g)", min_value=0.0, format="%.1f")
+        calories = st.number_input("Calories", min_value=0.0, format="%.1f")
+
+        if st.button("Save New Food"):
+            if not food:
+                st.error("Food name cannot be empty!")
+            elif food in food_data:
+                st.warning(f"{food} already exists in the database.")
+            else:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                new_entry = {
+                    "Food": food,
+                    "Unit": unit,
+                    "Protein": protein,
+                    "Carbs": carbs,
+                    "Fats": fats,
+                    "Calories": calories,
+                    "Timestamp": timestamp
+                }
+                df_new_food = pd.DataFrame([new_entry])
+                food_sheet.append_rows(df_new_food.values.tolist())
+                food_data[food] = {
+                    "Unit": unit,
+                    "Protein": protein,
+                    "Carbs": carbs,
+                    "Fats": fats,
+                    "Calories": calories
+                }
+                st.success(f"{food} has been added to the database!")
+
+                unit = food_data[food]["Unit"]
+                factor = quantity / 100 if is_weight_based(unit) else quantity
+                logged_entry = {
+                    "Date": log_date_str,
+                    "Food": food,
+                    "Quantity": quantity,
+                    "Unit": unit,
+                    "Protein": protein * factor,
+                    "Carbs": carbs * factor,
+                    "Fats": fats * factor,
+                    "Calories": calories * factor
+                }
+                log_sheet.append_rows([list(logged_entry.values())])
+                st.success(f"{food} has also been logged with {quantity} {unit}!")
+
 
 
 #quantity = st.number_input("Quantity", min_value=0.1, step=0.1)

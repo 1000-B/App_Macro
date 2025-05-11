@@ -320,35 +320,35 @@ if selection != "Miscellaneous Entry...":
 
 #quantity = st.number_input("Quantity", min_value=0.1, step=0.1)
 
-# Compute macros if food exists
-if food in food_data:
-    unit = food_data[food]["Unit"]  # Get the unit for this food item
-    factor = quantity / 100 if is_weight_based(unit) else quantity
-    protein = food_data[food]["Protein"] * factor
-    carbs = food_data[food]["Carbs"] * factor
-    fats = food_data[food]["Fats"] * factor
-    calories = food_data[food]["Calories"] * factor
+# # Compute macros if food exists
+# if food in food_data:
+#     unit = food_data[food]["Unit"]  # Get the unit for this food item
+#     factor = quantity / 100 if is_weight_based(unit) else quantity
+#     protein = food_data[food]["Protein"] * factor
+#     carbs = food_data[food]["Carbs"] * factor
+#     fats = food_data[food]["Fats"] * factor
+#     calories = food_data[food]["Calories"] * factor
 
-    if st.button("Add to Log", key="add_to_log_final"):
-        new_entry = {
-            "Date": log_date_str,
-            "Food": food,
-            "Quantity": quantity,
-            "Unit": food_data[food]["Unit"],
-            "Protein": protein,
-            "Carbs": carbs,
-            "Fats": fats,
-            "Calories": calories
-        }
+#     if st.button("Add to Log", key="add_to_log_final"):
+#         new_entry = {
+#             "Date": log_date_str,
+#             "Food": food,
+#             "Quantity": quantity,
+#             "Unit": food_data[food]["Unit"],
+#             "Protein": protein,
+#             "Carbs": carbs,
+#             "Fats": fats,
+#             "Calories": calories
+#         }
 
-        existing_log = log_sheet.get_all_records()
-        log_data = pd.DataFrame(existing_log)
-        log_data = pd.concat([log_data, pd.DataFrame([new_entry])], ignore_index=True)
+#         existing_log = log_sheet.get_all_records()
+#         log_data = pd.DataFrame(existing_log)
+#         log_data = pd.concat([log_data, pd.DataFrame([new_entry])], ignore_index=True)
 
-        log_sheet.clear()
-        log_sheet.update([log_data.columns.values.tolist()] + log_data.values.tolist())
+#         log_sheet.clear()
+#         log_sheet.update([log_data.columns.values.tolist()] + log_data.values.tolist())
 
-        st.success("Entry Added!")
+#         st.success("Entry Added!")
 
 
 st.session_state.pop('log_data_today', None)

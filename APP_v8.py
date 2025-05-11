@@ -179,7 +179,7 @@ if duplicates:
 
 
 # Step 1: Create list of existing foods + "Add New Food..."
-food_options = ["Add New Food...", "Miscellaneous Entry"] + list(food_data.keys())
+food_options = ["Add New Food...", "Miscellaneous Entry..."] + list(food_data.keys())
 
 # Step 2: Select box with existing foods
 selection = st.selectbox("Select Food or Add New", options=food_options)
@@ -188,13 +188,13 @@ selection = st.selectbox("Select Food or Add New", options=food_options)
 if selection == "Add New Food...":
     new_food = st.text_input("Enter new food name:")
     food = new_food if new_food else None  # Ensure user actually types something
-elif selection == "Miscellaneous Entry":
+elif selection == "Miscellaneous Entry...":
     misc_food_name = st.text_input("Enter ad-hoc food name:")
     food = f"Misc - {misc_food_name}" if misc_food_name else None
 else:
     food = selection  # Selected from existing foods
 
-if selection == "Miscellaneous Entry" and food:
+if selection == "Miscellaneous Entry..." and food:
     unit = st.text_input("Enter unit (e.g., grams, ml):")
     quantity = st.number_input("Quantity", min_value=0.0, step=1.0)
     protein = st.number_input("Protein (g)", min_value=0.0, step=0.1)
@@ -223,7 +223,7 @@ if food:
     st.info(f":white_check_mark: Selected Food: {food}")
 
 # 👇 Only show add new food UI if NOT 'Miscellaneous Entry'
-if selection != "Miscellaneous Entry":
+if selection != "Miscellaneous Entry...":
     # Get the unit of the selected food (if it exists)
     unit_display = food_data[food]["Unit"] if food in food_data else ""
 

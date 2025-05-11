@@ -50,31 +50,108 @@ from datetime import datetime
 # Default: today's date
 selected_date = datetime.today().date()
 
+def is_weight_based(unit):
+    return unit.lower() in ["gram", "grams", "g", "ml"]
+
 # Advanced options toggle
 with st.expander("🔧 Advanced Options"):
     selected_date = st.date_input("Select Date to Log", value=datetime.today().date())
 
     log_date_str = selected_date.strftime('%d/%m/%Y')
+    st.markdown("---")
+    st.markdown("### 🔁 Delete Latest Log Entry")
+    if st.button("Delete Latest Log Entry from Food Log"):
+        log_records = log_sheet.get_all_records()
+        if log_records:
+            log_sheet.delete_rows(len(log_records)+1)  # Add 2: 1 for headers, 1 for 1-based index
+            st.success("Deleted the latest entry from the Food Log.")
+        else:
+            st.warning("Food Log is empty.")
 
+    st.markdown("---")
+    # --- Frequently Used Food Buttons ---
+    st.markdown("### ⚡ Quick Add")
+
+    # Define your frequent food list
+    frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Lemon Juice", "Green Tea"]  # You define this list
+
+    # Set how many buttons per row
+    buttons_per_row = 4
+
+    # Create buttons in rows using st.columns
+    for i in range(0, len(frequent_food_names), buttons_per_row):
+        cols = st.columns(buttons_per_row)
+        for j, food_name in enumerate(frequent_food_names[i:i+buttons_per_row]):
+            with cols[j]:
+                if st.button(food_name):
+                    if food_name in food_data:
+                        unit = food_data[food_name]["Unit"]
+                        default_qty = 100 if is_weight_based(unit) else 1
+                        factor = default_qty / 100 if is_weight_based(unit) else default_qty
+
+                        new_entry = {
+                            "Date": log_date_str,
+                            "Food": food_name,
+                            "Quantity": default_qty,
+                            "Unit": unit,
+                            "Protein": food_data[food_name]["Protein"] * factor,
+                            "Carbs": food_data[food_name]["Carbs"] * factor,
+                            "Fats": food_data[food_name]["Fats"] * factor,
+                            "Calories": food_data[food_name]["Calories"] * factor,
+                        }
+
+                        log_sheet.append_rows([list(new_entry.values())])
+                        st.success(f"{food_name} ({default_qty} {unit}) added to log!")
+                    else:
+                        st.warning(f"{food_name} not found in Food Database.")
+
+
+        # ✅ NEW: Refresh button and session cache
+    st.markdown("---")
+    st.markdown("### 📋 Latest 10 Entries View (with Refresh)")
+    if st.button("🔄 Refresh Tables"):
+        st.session_state.log_data_full = pd.DataFrame(log_sheet.get_all_records())
+        st.session_state.food_data_full = pd.DataFrame(food_sheet.get_all_records())
+        st.success("Tables refreshed!")
+
+    if 'log_data_full' not in st.session_state:
+        st.session_state.log_data_full = pd.DataFrame(log_sheet.get_all_records())
+    if 'food_data_full' not in st.session_state:
+        st.session_state.food_data_full = pd.DataFrame(food_sheet.get_all_records())
+
+            
     st.markdown("---")
     st.markdown("### 🗑️ Delete Entries by Row Number")
     delete_target = st.radio("Choose what to delete", ["Food Log Entry", "Food Database Entry"])
+
     if delete_target == "Food Log Entry":
-        full_log_df = pd.DataFrame(log_sheet.get_all_records())
-        full_log_df.index += 2  # Because row 1 is headers, row 2 is first data row in Sheets
-        st.dataframe(full_log_df)
-        row_to_delete = st.number_input("Enter the row number to delete from Food Log", min_value=2, max_value=len(full_log_df) + 1, step=1)
+        df = st.session_state.log_data_full
+        st.dataframe(df.tail(10))  # ✅ Display last 10 entries with index
+        row_index_to_delete = st.number_input(
+            "Enter the DataFrame index to delete from Food Log", 
+            min_value=int(df.index.min()), 
+            max_value=int(df.index.max()), 
+            step=1
+        )
         if st.button("Delete Row from Food Log"):
-            log_sheet.delete_rows(row_to_delete)
-            st.success(f"Deleted row {row_to_delete} from Food Log")
+            sheet_row_to_delete = row_index_to_delete + 2  # +1 for header, +1 for 1-based indexing
+            log_sheet.delete_rows(sheet_row_to_delete)
+            st.success(f"Deleted DataFrame index {row_index_to_delete} (Sheet row {sheet_row_to_delete}) from Food Log")
+
     elif delete_target == "Food Database Entry":
-        food_df = pd.DataFrame(food_sheet.get_all_records())
-        food_df.index += 2  # Same logic: first data row starts at 2 in Sheets
-        st.dataframe(food_df)
-        row_to_delete = st.number_input("Enter the row number to delete from Food Database", min_value=2, max_value=len(food_df) + 1, step=1)
+        df = st.session_state.food_data_full
+        st.dataframe(df)
+        row_index_to_delete = st.number_input(
+            "Enter the DataFrame index to delete from Food Database", 
+            min_value=int(df.index.min()), 
+            max_value=int(df.index.max()), 
+            step=1
+        )
         if st.button("Delete Row from Food Database"):
-            food_sheet.delete_rows(row_to_delete)
-            st.success(f"Deleted row {row_to_delete} from Food Database")
+            sheet_row_to_delete = row_index_to_delete + 2
+            food_sheet.delete_rows(sheet_row_to_delete)
+            st.success(f"Deleted DataFrame index {row_index_to_delete} (Sheet row {sheet_row_to_delete}) from Food Database")
+
 
 
 def save_food_data():
@@ -99,6 +176,8 @@ duplicates = set([food for food in existing_foods if existing_foods.count(food) 
 if duplicates:
     st.error(f"Duplicate foods in Google Sheets: {duplicates}. Please remove them.")
 
+
+
 # Step 1: Create list of existing foods + "Add New Food..."
 food_options = ["Add New Food..."] + list(food_data.keys())
 
@@ -116,8 +195,6 @@ else:
 if food:
     st.info(f":white_check_mark: Selected Food: {food}")
 
-
-#quantity = st.number_input("Quantity", min_value=1, step=1)
 # Get the unit of the selected food (if it exists)
 unit_display = food_data[food]["Unit"] if food in food_data else ""
 
@@ -300,32 +377,27 @@ if not log_data.empty:
             'calories': total_calories
         }
 
+    st.markdown("### 🥇 Top Foods by Macro Contribution Today")
+
+    def show_top_foods(nutrient, label, color):
+        top = log_data.groupby("Food")[nutrient].sum().sort_values(ascending=False).head(3)
+        if not top.empty:
+            st.markdown(f"**Top 3 {label} Foods:**")
+            for idx, (food, amount) in enumerate(top.items(), start=1):
+                st.markdown(f"{idx}. {food} - **{amount:.1f}g**", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        show_top_foods("Protein", "Protein", "blue")
+        show_top_foods("Fats", "Fats", "orange")
+
+    with col2:
+        show_top_foods("Carbs", "Carbs", "green")
+        show_top_foods("Calories", "Calorie", "red")
+
+
+
 if 'full_log_data' not in st.session_state:
     st.session_state['full_log_data'] = pd.DataFrame(log_sheet.get_all_records())
 
 
-# Macro breakdown over time
-# st.subheader("Macro Breakdown")
-# time_filter = st.radio("View by:", ("Daily", "Weekly", "Monthly"))
-# 
-# def plot_macros(filtered_data):
-    # fig, ax = plt.subplots()
-    # filtered_data.set_index("Date")[['Protein', 'Carbs', 'Fats', 'Calories']].plot(kind='bar', ax=ax)
-    # st.pyplot(fig)
-# 
-# log_data = pd.DataFrame(log_sheet.get_all_records())
-# if not log_data.empty:
-    # log_data["Date"] = pd.to_datetime(log_data["Date"])
-# 
-    # 
-    # if time_filter == "Daily":
-        # daily_data = log_data.groupby("Date", as_index=False).sum()  # Keep 'Date' as a column
-        # plot_macros(daily_data)
-# 
-    # elif time_filter == "Weekly":
-        # log_data["Week"] = log_data["Date"].dt.to_period("W")
-        # plot_macros(log_data.groupby("Week", as_index=False).sum())
-# 
-    # elif time_filter == "Monthly":
-        # log_data["Month"] = log_data["Date"].dt.to_period("M")
-        # plot_macros(log_data.groupby("Month", as_index=False).sum())

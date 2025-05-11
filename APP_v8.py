@@ -179,7 +179,7 @@ if duplicates:
 
 
 # Step 1: Create list of existing foods + "Add New Food..."
-food_options = ["Add New Food..."] + list(food_data.keys())
+food_options = ["Add New Food...", "Miscellaneous Entry"] + list(food_data.keys())
 
 # Step 2: Select box with existing foods
 selection = st.selectbox("Select Food or Add New", options=food_options)
@@ -188,8 +188,34 @@ selection = st.selectbox("Select Food or Add New", options=food_options)
 if selection == "Add New Food...":
     new_food = st.text_input("Enter new food name:")
     food = new_food if new_food else None  # Ensure user actually types something
+elif selection == "Miscellaneous Entry":
+    misc_food_name = st.text_input("Enter ad-hoc food name:")
+    food = f"Misc - {misc_food_name}" if misc_food_name else None
 else:
     food = selection  # Selected from existing foods
+
+if selection == "Miscellaneous Entry" and food:
+    unit = st.text_input("Enter unit (e.g., grams, ml):")
+    quantity = st.number_input("Quantity", min_value=0.0, step=1.0)
+    protein = st.number_input("Protein (g)", min_value=0.0, step=0.1)
+    carbs = st.number_input("Carbs (g)", min_value=0.0, step=0.1)
+    fats = st.number_input("Fats (g)", min_value=0.0, step=0.1)
+    calories = st.number_input("Calories", min_value=0.0, step=0.1)
+
+    if st.button("Add Miscellaneous Food to Log"):
+        log_entry = {
+            "Date": log_date_str,
+            "Food": food,
+            "Quantity": quantity,
+            "Unit": unit,
+            "Protein": protein,
+            "Carbs": carbs,
+            "Fats": fats,
+            "Calories": calories
+        }
+        log_sheet.append_rows([list(log_entry.values())])
+        st.success(f"{food} added to log.")
+
 
 # Step 4: Show confirmation of selection
 if food:

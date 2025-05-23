@@ -116,9 +116,9 @@ with st.expander("🔧 Advanced Options"):
             food_sheet.delete_rows(sheet_row_to_delete)
             st.success(f"Deleted DataFrame index {row_index_to_delete} (Sheet row {sheet_row_to_delete}) from Food Database")
 
-with st.expander("🔧 Advanced Options"):
+with st.expander("⚡ Quick Add"):
     # --- Frequently Used Food Buttons ---
-    st.markdown("### ⚡ Quick Add")
+    ##st.markdown("### ⚡ Quick Add")
 
     # Define your frequent food list
     frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Lemon Juice", "Green Tea"]  # You define this list

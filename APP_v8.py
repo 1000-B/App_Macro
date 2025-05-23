@@ -69,43 +69,7 @@ with st.expander("🔧 Advanced Options"):
             st.warning("Food Log is empty.")
 
     st.markdown("---")
-    # --- Frequently Used Food Buttons ---
-    st.markdown("### ⚡ Quick Add")
-
-    # Define your frequent food list
-    frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Lemon Juice", "Green Tea"]  # You define this list
-
-    # Set how many buttons per row
-    buttons_per_row = 4
-
-    # Create buttons in rows using st.columns
-    for i in range(0, len(frequent_food_names), buttons_per_row):
-        cols = st.columns(buttons_per_row)
-        for j, food_name in enumerate(frequent_food_names[i:i+buttons_per_row]):
-            with cols[j]:
-                if st.button(food_name, key=f"quick_add_{food_name}"):
-                    if food_name in food_data:
-                        unit = food_data[food_name]["Unit"]
-                        default_qty = 100 if is_weight_based(unit) else 1
-                        factor = default_qty / 100 if is_weight_based(unit) else default_qty
-
-                        new_entry = {
-                            "Date": log_date_str,
-                            "Food": food_name,
-                            "Quantity": default_qty,
-                            "Unit": unit,
-                            "Protein": food_data[food_name]["Protein"] * factor,
-                            "Carbs": food_data[food_name]["Carbs"] * factor,
-                            "Fats": food_data[food_name]["Fats"] * factor,
-                            "Calories": food_data[food_name]["Calories"] * factor,
-                        }
-
-                        log_sheet.append_rows([list(new_entry.values())])
-                        st.success(f"{food_name} ({default_qty} {unit}) added to log!")
-                    else:
-                        st.warning(f"{food_name} not found in Food Database.")
-
-
+    
         # ✅ NEW: Refresh button and session cache
     st.markdown("---")
     st.markdown("### 📋 Latest 10 Entries View (with Refresh)")
@@ -151,6 +115,43 @@ with st.expander("🔧 Advanced Options"):
             sheet_row_to_delete = row_index_to_delete + 2
             food_sheet.delete_rows(sheet_row_to_delete)
             st.success(f"Deleted DataFrame index {row_index_to_delete} (Sheet row {sheet_row_to_delete}) from Food Database")
+
+with st.expander("🔧 Advanced Options"):
+    # --- Frequently Used Food Buttons ---
+    st.markdown("### ⚡ Quick Add")
+
+    # Define your frequent food list
+    frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Lemon Juice", "Green Tea"]  # You define this list
+
+    # Set how many buttons per row
+    buttons_per_row = 4
+
+    # Create buttons in rows using st.columns
+    for i in range(0, len(frequent_food_names), buttons_per_row):
+        cols = st.columns(buttons_per_row)
+        for j, food_name in enumerate(frequent_food_names[i:i+buttons_per_row]):
+            with cols[j]:
+                if st.button(food_name, key=f"quick_add_{food_name}"):
+                    if food_name in food_data:
+                        unit = food_data[food_name]["Unit"]
+                        default_qty = 100 if is_weight_based(unit) else 1
+                        factor = default_qty / 100 if is_weight_based(unit) else default_qty
+
+                        new_entry = {
+                            "Date": log_date_str,
+                            "Food": food_name,
+                            "Quantity": default_qty,
+                            "Unit": unit,
+                            "Protein": food_data[food_name]["Protein"] * factor,
+                            "Carbs": food_data[food_name]["Carbs"] * factor,
+                            "Fats": food_data[food_name]["Fats"] * factor,
+                            "Calories": food_data[food_name]["Calories"] * factor,
+                        }
+
+                        log_sheet.append_rows([list(new_entry.values())])
+                        st.success(f"{food_name} ({default_qty} {unit}) added to log!")
+                    else:
+                        st.warning(f"{food_name} not found in Food Database.")
 
 
 

@@ -121,7 +121,7 @@ with st.expander("⚡ Quick Add"):
     ##st.markdown("### ⚡ Quick Add")
 
     # Define your frequent food list
-    frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Lemon Juice", "Green Tea"]  # You define this list
+    frequent_food_names = ["Apple Cider Vinegar", "Turmeric Latte", "Lemon Juice", "Green Tea", "B12 Vitamin (10ug)", "Raw Garlic", "Magnesium B-Complex"]  # You define this list
 
     # Set how many buttons per row
     buttons_per_row = 4

@@ -6,3 +6,4 @@ gspread
 pandas
 google-auth
 plotly
+openai

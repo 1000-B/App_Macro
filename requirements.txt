@@ -6,6 +6,3 @@ gspread
 pandas
 google-auth
 plotly
-datetime
-openai
-os

@@ -4,6 +4,8 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 import streamlit as st
 
+st.write("Loaded secret keys:", list(st.secrets.keys()))
+
 st.title("📈 Analytics & Insights")
 
 # Set your Groq API key (store it securely via Streamlit Secrets)
@@ -17,7 +19,8 @@ if 'log_data_full' not in st.session_state:
     st.stop()
 
 food_log = st.session_state.log_data_full.copy()
-food_log['Date'] = pd.to_datetime(food_log['Date'])
+food_log['Date'] = pd.to_datetime(food_log['Date'], dayfirst=True, errors='coerce')
+food_log = food_log.dropna(subset=['Date'])
 food_log = food_log.sort_values(by="Date", ascending=False)
 
 summary_text = food_log.groupby('Date')[['Protein', 'Carbs', 'Fats', 'Calories']].sum().reset_index().to_string(index=False)

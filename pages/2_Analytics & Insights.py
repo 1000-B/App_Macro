@@ -107,12 +107,12 @@ final_prompt = default_prompt + f"\n\nAdditional question:\n{manual_prompt}" if 
 if st.button("🧠 Analyze My Nutrition"):
     with st.spinner("Thinking..."):
         try:
-            response = openai.ChatCompletion.create(
-                model="llama3-70b-8192",
+            response = client.chat.completions.create(
+                model="llama3-8b-8192",
                 messages=[
-                    {"role": "system", "content": "You are a helpful nutritionist."},
-                    {"role": "user", "content": final_prompt}
-                ],
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": "What's the weather like today?"}
+                    ],
                 temperature=0.7
             )
             ai_reply = response['choices'][0]['message']['content']

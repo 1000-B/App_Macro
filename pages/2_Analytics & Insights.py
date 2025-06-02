@@ -1,4 +1,4 @@
-import openai
+from openai import OpenAI
 import os
 from datetime import date, datetime, timedelta
 import pandas as pd
@@ -9,8 +9,10 @@ st.write("Loaded secret keys:", list(st.secrets.keys()))
 st.title("📈 Analytics & Insights")
 
 # Set your Groq API key (store it securely via Streamlit Secrets)
-openai.api_key = st.secrets["GROQ_API_KEY"]
-openai.api_base = "https://api.groq.com/openai/v1"
+client = OpenAI(
+    api_key=st.secrets["GROQ_API_KEY"],
+    base_url="https://api.groq.com/openai/v1"
+)
 
 # Assuming 'df' is your food log DataFrame for the past 7–30 days
 # --- Load Food Log ---
@@ -108,13 +110,14 @@ if st.button("🧠 Analyze My Nutrition"):
     with st.spinner("Thinking..."):
         try:
             response = client.chat.completions.create(
-                model="llama3-8b-8192",
+                model="llama3-70b-8192",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": "What's the weather like today?"}
-                    ],
+                    {"role": "system", "content": "You are a helpful nutritionist."},
+                    {"role": "user", "content": final_prompt}
+                ],
                 temperature=0.7
             )
+
             ai_reply = response['choices'][0]['message']['content']
             st.markdown("### 📝 AI Response:")
             st.markdown(ai_reply)

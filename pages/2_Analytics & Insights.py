@@ -118,7 +118,7 @@ if st.button("🧠 Analyze My Nutrition"):
                 temperature=0.7
             )
 
-            ai_reply = response['choices'][0]['message']['content']
+            ai_reply = response.choices[0].message.content
             st.markdown("### 📝 AI Response:")
             st.markdown(ai_reply)
         except Exception as e:

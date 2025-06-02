@@ -35,3 +35,26 @@ if not log_data.empty:
         file_name='food_log.csv',
         mime='text/csv'
     )
+
+# --- Editable Tables ---
+st.subheader("📝 Edit Food Database")
+edited_food_data = st.data_editor(food_data, num_rows="dynamic", use_container_width=True, key="edit_food")
+
+if st.button("✅ Save Changes to Food Database"):
+    try:
+        food_sheet.clear()
+        food_sheet.update([edited_food_data.columns.values.tolist()] + edited_food_data.values.tolist())
+        st.success("Food Database updated successfully!")
+    except Exception as e:
+        st.error(f"Failed to update Food Database: {e}")
+
+st.subheader("📝 Edit Food Log")
+edited_log_data = st.data_editor(log_data, num_rows="dynamic", use_container_width=True, key="edit_log")
+
+if st.button("✅ Save Changes to Food Log"):
+    try:
+        log_sheet.clear()
+        log_sheet.update([edited_log_data.columns.values.tolist()] + edited_log_data.values.tolist())
+        st.success("Food Log updated successfully!")
+    except Exception as e:
+        st.error(f"Failed to update Food Log: {e}")

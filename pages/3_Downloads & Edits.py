@@ -47,7 +47,7 @@ with col2:
             mime='text/csv'
         )
 
-# --- Function to push updates ---
+# --- Save function ---
 def save_to_sheet(sheet, df, name="Sheet"):
     try:
         sheet.clear()
@@ -61,34 +61,40 @@ def save_to_sheet(sheet, df, name="Sheet"):
 # ============================
 st.subheader("🍽️ Edit Food Database")
 
-food_data_editable = food_data.copy()
+if "food_data_state" not in st.session_state:
+    st.session_state["food_data_state"] = food_data.copy()
 
 # Add new empty row
 if st.button("➕ Add Row to Food Database"):
     new_row = pd.DataFrame([[""] * len(food_data.columns)], columns=food_data.columns)
-    food_data_editable = pd.concat([food_data_editable, new_row], ignore_index=True)
+    st.session_state["food_data_state"] = pd.concat([st.session_state["food_data_state"], new_row], ignore_index=True)
 
-# Delete rows checkbox
-delete_food_rows = st.multiselect("🗑️ Select rows to delete (FoodDatabase):", options=food_data_editable.index.tolist())
-
-if delete_food_rows:
-    food_data_editable = food_data_editable.drop(index=delete_food_rows).reset_index(drop=True)
-
+# Editable table with selectable rows
 edited_food_data = st.data_editor(
-    food_data_editable,
-    num_rows="dynamic",
+    st.session_state["food_data_state"],
     use_container_width=True,
-    key="edit_food"
+    num_rows="dynamic",
+    key="edit_food",
+    hide_index=True
 )
 
+# Delete selected rows
+if st.button("🗑️ Delete Selected Rows (Food Database)"):
+    selected_rows = st.session_state["edit_food"]["edited_rows"]
+    remaining_data = edited_food_data.drop(index=list(selected_rows.keys())).reset_index(drop=True)
+    st.session_state["food_data_state"] = remaining_data
+    st.experimental_rerun()
+
+# Save and Revert buttons
 col_save_food, col_revert_food = st.columns(2)
 with col_save_food:
     if st.button("✅ Save Changes to Food Database"):
-        save_to_sheet(food_sheet, edited_food_data, "Food Database")
+        save_to_sheet(food_sheet, st.session_state["food_data_state"], "Food Database")
 
 with col_revert_food:
     if st.button("🔄 Revert Food Database"):
         st.cache_data.clear()
+        del st.session_state["food_data_state"]
         st.experimental_rerun()
 
 # ============================
@@ -96,32 +102,38 @@ with col_revert_food:
 # ============================
 st.subheader("🧾 Edit Food Log")
 
-log_data_editable = log_data.copy()
+if "log_data_state" not in st.session_state:
+    st.session_state["log_data_state"] = log_data.copy()
 
 # Add new empty row
 if st.button("➕ Add Row to Food Log"):
     new_row = pd.DataFrame([[""] * len(log_data.columns)], columns=log_data.columns)
-    log_data_editable = pd.concat([log_data_editable, new_row], ignore_index=True)
+    st.session_state["log_data_state"] = pd.concat([st.session_state["log_data_state"], new_row], ignore_index=True)
 
-# Delete rows checkbox
-delete_log_rows = st.multiselect("🗑️ Select rows to delete (FoodLog):", options=log_data_editable.index.tolist())
-
-if delete_log_rows:
-    log_data_editable = log_data_editable.drop(index=delete_log_rows).reset_index(drop=True)
-
+# Editable table with selectable rows
 edited_log_data = st.data_editor(
-    log_data_editable,
-    num_rows="dynamic",
+    st.session_state["log_data_state"],
     use_container_width=True,
-    key="edit_log"
+    num_rows="dynamic",
+    key="edit_log",
+    hide_index=True
 )
 
+# Delete selected rows
+if st.button("🗑️ Delete Selected Rows (Food Log)"):
+    selected_rows = st.session_state["edit_log"]["edited_rows"]
+    remaining_data = edited_log_data.drop(index=list(selected_rows.keys())).reset_index(drop=True)
+    st.session_state["log_data_state"] = remaining_data
+    st.experimental_rerun()
+
+# Save and Revert buttons
 col_save_log, col_revert_log = st.columns(2)
 with col_save_log:
     if st.button("✅ Save Changes to Food Log"):
-        save_to_sheet(log_sheet, edited_log_data, "Food Log")
+        save_to_sheet(log_sheet, st.session_state["log_data_state"], "Food Log")
 
 with col_revert_log:
     if st.button("🔄 Revert Food Log"):
         st.cache_data.clear()
+        del st.session_state["log_data_state"]
         st.experimental_rerun()

@@ -40,9 +40,9 @@ b = st.session_state['bias_random']
 # Display the bias
 st.markdown(f"**Date:** {b['Date']}")
 st.markdown(f"**Area:** {b['Area']}")
-st.markdown(f"**Sub Area / Bias:** {b['Sub Area/Bias']}")
+st.markdown(f"**Bias:** {b['Bias']}")
 st.markdown(f"**Definition:** {b['Definition']}")
-st.markdown(f"**Localised Example:** {b['Localised Examples']}")
+#st.markdown(f"**Localised Example:** {b['Localised Examples']}")
 
 # Optional button to show another (non-deterministic) bias
 if st.button("Display Another Bias"):
